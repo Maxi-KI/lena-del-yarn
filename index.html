@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Lena Del Yarn">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#F7F4EF">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Lena Del Yarn</title>
+<style>
+:root{
+  --paper:#F7F4EF; --card:#FFFFFF; --ink:#2A2038; --muted:#6F6879; --line:#E4DED5;
+  --knit:#6C5CE7; --knit-soft:#ECE9FD; --crochet:#D45A2E; --crochet-soft:#FCE8DF;
+  --accent:var(--knit); --accent-soft:var(--knit-soft);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+body[data-craft="haekeln"]{--accent:var(--crochet);--accent-soft:var(--crochet-soft)}
+h1,h2,h3{font-family:Georgia,"Iowan Old Style","Times New Roman",serif;font-weight:400;margin:0;letter-spacing:-.01em}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+input,textarea,select{font:inherit;color:inherit}
+.wrap{max-width:560px;margin:0 auto;padding:0 18px 104px}
+
+.bar{display:flex;align-items:center;gap:12px;padding:14px 18px 10px;max-width:560px;margin:0 auto}
+.bar h2{font-size:21px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.back,.icon-btn{width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:50%}
+.back{margin-left:-8px}.icon-btn{color:var(--muted)}
+.back:active,.icon-btn:active{background:#0000000d}
+
+/* Start */
+.hero{padding:14px 0 22px;text-align:center}
+.logo{width:84px;height:84px;border-radius:20px;overflow:hidden;margin:0 auto 14px;box-shadow:0 8px 22px rgba(108,92,231,.28)}
+.logo svg{display:block}
+.hero h1{font-size:33px;line-height:1.15}
+.hero p{margin:8px 0 0;color:var(--muted);font-size:15px}
+.hint{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:12px;display:flex;gap:10px;align-items:flex-start}
+.hint div{flex:1;font-size:14px;color:#454b47}
+.hint b{display:block;font-family:Georgia,serif;font-weight:400;font-size:16.5px;color:var(--ink);margin-bottom:2px}
+.hint .x{color:var(--muted);font-size:20px;line-height:1;padding:2px 4px}
+.hint .go{display:inline-block;margin-top:8px;color:var(--accent);font-weight:600;font-size:14px}
+.cont{display:block;width:100%;text-align:left;border-radius:20px;padding:18px 18px 16px;margin-bottom:14px;color:#fff;background:var(--accent);box-shadow:0 6px 18px rgba(31,42,38,.16)}
+.cont[data-c="stricken"]{background:var(--knit)} .cont[data-c="haekeln"]{background:var(--crochet)}
+.cont small{font-size:12.5px;opacity:.85;letter-spacing:.02em}
+.cont .cn{display:block;font-family:Georgia,serif;font-size:22px;margin:2px 0 4px}
+.cont .cm{font-size:14px;opacity:.9;font-variant-numeric:tabular-nums}
+.cont .track{background:rgba(255,255,255,.28)} .cont .track i{background:#fff}
+.cont:active{transform:scale(.99)}
+.crafts{display:grid;gap:12px}
+.craft{background:var(--card);border-radius:20px;padding:18px 20px;display:flex;align-items:center;gap:18px;border:1px solid var(--line);width:100%;text-align:left;transition:transform .12s ease}
+.craft:active{transform:scale(.985)}
+.craft .cname{font-family:Georgia,serif;font-size:23px;display:block}
+.craft .csub{color:var(--muted);font-size:13.5px}
+.craft svg{flex:none}
+
+/* Listen */
+.plist{display:grid;gap:10px;margin-top:4px}
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;width:100%;text-align:left;display:block}
+.pcard:active{background:#faf9f6}
+.prow{display:flex;align-items:baseline;gap:10px}
+.pname{font-family:Georgia,serif;font-size:18px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pmeta{color:var(--muted);font-size:13px;margin-top:2px}
+.pct{font-size:13px;color:var(--accent);font-variant-numeric:tabular-nums}
+.track{height:4px;background:var(--line);border-radius:2px;margin-top:10px;overflow:hidden}
+.track i{display:block;height:100%;background:var(--accent);border-radius:2px;transition:width .2s ease}
+.done .pname{color:var(--muted)}
+.librow{display:flex;justify-content:space-between;align-items:center;width:100%;margin-top:18px;padding:13px 16px;border-radius:14px;border:1px dashed var(--line);color:var(--muted);font-size:14px}
+.librow span:last-child{color:var(--accent);font-weight:600}
+.empty{text-align:center;padding:40px 20px 20px;color:var(--muted)}
+.empty h3{font-size:19px;color:var(--ink);margin-bottom:6px}
+.fab{position:fixed;right:20px;bottom:calc(22px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;line-height:1;box-shadow:0 6px 18px rgba(31,42,38,.22);z-index:20}
+.fab:active{transform:scale(.94)}
+
+/* Tabs */
+.tabs{display:flex;gap:6px;background:#e7e4db;border-radius:12px;padding:4px;margin:2px 0 16px}
+.tabs button{flex:1;padding:8px 0;border-radius:9px;font-size:14.5px;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 2px #0000000f}
+
+/* Zähler */
+.section-name{font-size:13px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-variant-numeric:tabular-nums}
+.instr{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 18px 16px;transition:box-shadow .2s}
+.instr.change{border-color:var(--accent);box-shadow:inset 4px 0 0 var(--accent)}
+.instr .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.instr .rw{font-family:Georgia,serif;font-size:19px}
+.instr .side{font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.badge{font-size:12px;background:var(--accent);color:#fff;border-radius:999px;padding:2px 9px;font-weight:600}
+.instr p{margin:10px 0 0;font-size:17.5px;line-height:1.5}
+.blockbar{display:flex;gap:4px;margin-top:14px}
+.blockbar i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.blockbar i.on{background:var(--accent);opacity:.45}
+.blockbar i.cur{background:var(--accent)}
+.blockbar i.chg{outline:1.5px solid var(--accent);outline-offset:1px}
+.nexthint{font-size:13.5px;color:var(--accent);margin-top:10px;font-weight:500}
+.stats{display:flex;gap:10px;margin:12px 0}
+.stat{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 8px;text-align:center}
+.stat b{display:block;font-size:20px;font-variant-numeric:tabular-nums;font-weight:600}
+.stat span{font-size:12px;color:var(--muted)}
+.plus{width:100%;background:var(--accent);color:#fff;border-radius:22px;padding:26px 0 22px;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 4px 14px rgba(31,42,38,.16);transition:transform .08s ease;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.plus:active{transform:scale(.98)}
+.plus .sign{font-size:46px;line-height:1;font-weight:300}
+.plus .lbl{font-size:14px;opacity:.9}
+.undo{display:flex;gap:10px;margin-top:12px}
+.undo button{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 0;font-size:14.5px;color:var(--muted)}
+.undo button:active{background:#f3f1ec}
+.aux{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 10px 8px 14px;margin-top:10px}
+.aux .an{flex:1;text-align:left;font-size:15px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aux .av{min-width:36px;text-align:center;font-size:20px;font-variant-numeric:tabular-nums}
+.rnd{width:52px;height:52px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--muted);background:#fbfaf7;touch-action:manipulation}
+.rnd.sm{width:40px;height:40px;font-size:20px}
+.rnd.big{background:var(--accent);border-color:var(--accent);color:#fff;width:64px;height:64px;font-size:30px}
+.rnd.sm.big{width:40px;height:40px;font-size:20px}
+.rnd:active{transform:scale(.94)}
+.pnote{display:block;width:100%;text-align:left;margin-top:10px;background:#fbfaf6;border:1px solid var(--line);border-radius:14px;padding:11px 14px;font-size:14.5px;color:#454b47;white-space:pre-wrap}
+.links{display:flex;justify-content:center;gap:22px;margin-top:14px}
+.links button{font-size:13.5px;color:var(--accent);font-weight:500}
+.total{text-align:center;color:var(--muted);font-size:13px;margin-top:12px;font-variant-numeric:tabular-nums}
+.finish{margin-top:4px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 18px 20px;text-align:center}
+.finish h3{font-size:22px;margin:10px 0 4px}
+.finish p{margin:0;font-size:14.5px;color:var(--muted)}
+.partsel{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px;-webkit-overflow-scrolling:touch}
+.partsel button{white-space:nowrap;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:14px;color:var(--muted)}
+.partsel button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* Feier */
+.cele{position:relative;width:96px;height:96px;margin:0 auto}
+.cele .ring{position:absolute;inset:14px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;animation:pop .45s cubic-bezier(.2,1.4,.4,1) both}
+.cele i{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px;border-radius:50%;background:var(--accent);opacity:0;animation:burst .8s ease-out .15s both}
+@keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes burst{0%{opacity:.9;transform:rotate(var(--a)) translateY(0)}100%{opacity:0;transform:rotate(var(--a)) translateY(-46px)}}
+
+/* Freie Zähler */
+.counter{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
+.counter .chead{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.counter .cname{font-family:Georgia,serif;font-size:18px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.counter .cbody{display:flex;align-items:center;gap:12px}
+.counter .val{flex:1;text-align:center;font-size:40px;font-variant-numeric:tabular-nums;line-height:1.1}
+.counter .crep{margin-top:10px;font-size:13.5px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.counter .crep b{color:var(--accent);font-variant-numeric:tabular-nums}
+
+/* Anleitung/Info */
+.sec{background:var(--card);border:1px solid var(--line);border-radius:16px;margin-bottom:10px;overflow:hidden}
+.sec>summary{padding:14px 16px;font-size:15.5px;display:flex;justify-content:space-between;gap:10px;list-style:none;cursor:pointer}
+.sec>summary::-webkit-details-marker{display:none}
+.sec>summary span:last-child{color:var(--muted);font-size:13px;white-space:nowrap}
+.sec .rows{border-top:1px solid var(--line)}
+.rline{display:flex;gap:12px;padding:11px 16px;font-size:14.5px;border-bottom:1px solid #efece4}
+.rline:last-child{border-bottom:0}
+.rline .n{color:var(--muted);min-width:70px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.rline.now{background:var(--accent-soft)}
+.rline em{color:var(--accent);font-style:normal;font-weight:600}
+.note{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
+.note h3{font-size:16.5px;margin-bottom:5px}
+.note p{margin:0 0 4px;font-size:14.5px;color:#454b47}
+.note p:last-child{margin-bottom:0}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}
+.field input,.field textarea{width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 12px;font-size:16px}
+.field textarea{min-height:92px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* Sheets */
+.scrim{position:fixed;inset:0;background:rgba(31,42,38,.38);display:flex;align-items:flex-end;justify-content:center;z-index:50}
+.sheet{background:var(--paper);width:100%;max-width:560px;border-radius:22px 22px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom,0px));max-height:88vh;overflow-y:auto}
+.sheet h3{font-size:20px;margin-bottom:6px}
+.sheet .sub{color:var(--muted);font-size:14px;margin:0 0 16px}
+.btn{display:block;width:100%;text-align:center;padding:14px;border-radius:14px;background:var(--accent);color:#fff;font-size:16px;margin-top:10px}
+.btn.ghost{background:var(--card);border:1px solid var(--line);color:var(--ink)}
+.btn.warn{background:#9c3226}
+.btn.danger{color:#9c3226}
+.btn:active{opacity:.85}
+.opt{width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:8px;display:block}
+.opt b{display:block;font-family:Georgia,serif;font-size:17px;font-weight:400}
+.opt span{font-size:13.5px;color:var(--muted)}
+.opt:active{background:#f6f4ef}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(28px + env(safe-area-inset-bottom,0px));background:var(--ink);color:#fff;padding:11px 18px;border-radius:999px;font-size:14px;z-index:99;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap;max-width:92vw}
+.toast.on{opacity:1}
+.toast.on.act{pointer-events:auto}
+.toast button{color:#fff;font-weight:700;margin-left:14px;text-decoration:underline;text-underline-offset:3px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.cele .ring{opacity:1}}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+const VERSION = "1.5";
+const KEY = "lena-handarbeit";
+const BACKUP_DAYS = 14;
+const DAY = 86400000;
+
+/* Absichtlich leer: Anleitungen kommen per JSON-Import und bleiben nur auf dem Gerät. */
+const LIBRARY = [];
+
+/* ============ Zustand ============ */
+let state = load();
+let view = {name:"home", craft:"stricken", projectId:null, tab:"zaehler", partIdx:0};
+
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw){ const d = JSON.parse(raw); if(d && Array.isArray(d.projects)) return normalize(d); }
+  }catch(e){}
+  return normalize({version:1, projects:[]});
+}
+function normalize(d){
+  d.library = Array.isArray(d.library) ? d.library : [];
+  d.settings = Object.assign({wake:true, lastBackup:null, hideInstall:false}, d.settings||{});
+  return d;
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){ toast("Speichern fehlgeschlagen"); } }
+function uid(){ return Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-4); }
+function slug(s){ return String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") || uid(); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function allPatterns(){ return [...LIBRARY, ...state.library]; }
+function craftLabel(c){ return c==="haekeln" ? "Häkeln" : "Stricken"; }
+function unitOf(x){ return (x && x.unit) || (x && x.craft==="haekeln" ? "Runde" : "Reihe"); }
+function unitsOf(x){ return unitOf(x) + "n"; }
+function pick(v, i){ return Array.isArray(v) ? (v[i] ?? v[0]) : v; }
+function castOnOf(part, i){ return pick(part.castOn, i) || 0; }
+function fmtDate(t){ return new Date(t).toLocaleDateString("de-DE", {day:"numeric", month:"long", year:"numeric"}); }
+function daysText(p){ const d = Math.floor(((p.finished||Date.now())-p.created)/DAY); return d<1 ? "an einem Tag" : `in ${d+1} Tagen`; }
+function sinceDays(t){ return Math.max(0, Math.floor((Date.now()-t)/DAY)); }
+
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
+const isStandalone = window.navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+
+/* ============ Reihen ausrollen ============ */
+function buildRows(part, sizeIdx){
+  const out = [];
+  let stitches = castOnOf(part, sizeIdx);
+  (part.sections||[]).forEach((sec, si)=>{
+    const reps = pick(sec.repeats, sizeIdx) || 1;
+    for(let r=0; r<reps; r++){
+      sec.rows.forEach((row, ri)=>{
+        const delta = pick(row.delta, sizeIdx) || 0;
+        stitches += delta;
+        out.push({sectionIdx:si, sectionName:sec.name, repeat:r+1, repeatTotal:reps,
+          rowInBlock:ri+1, blockLen:sec.rows.length, side:row.side||"",
+          text:pick(row.text, sizeIdx), delta, stitches});
+      });
+    }
+  });
+  return out;
+}
+const rowCache = new Map();
+function projectRows(p, i){
+  const k = p.id+"#"+i+"#"+(p.sizeIdx||0);
+  let r = rowCache.get(k);
+  if(!r){ r = buildRows(p.parts[i], p.sizeIdx||0); rowCache.set(k, r); }
+  return r;
+}
+function totalRows(p){ return p.parts.reduce((s,_,i)=>s+projectRows(p,i).length, 0); }
+function doneRows(p){ return p.parts.reduce((s,pt)=>s+(pt.row||0), 0); }
+function progress(p){ if(p.mode==="free") return null; const t = totalRows(p); return t ? Math.round(doneRows(p)/t*100) : 0; }
+function partDone(p, i){ return (p.parts[i].row||0) >= projectRows(p,i).length; }
+
+/* ============ Display wachhalten ============ */
+let wakeLock = null;
+const wakeSupported = ("wakeLock" in navigator);
+function wakeNeeded(){ return state.settings.wake && view.name==="project" && view.tab==="zaehler"; }
+async function syncWake(){
+  if(!wakeSupported) return;
+  if(wakeNeeded()){
+    if(wakeLock) return;
+    try{ wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", ()=>{ wakeLock=null; }); }
+    catch(e){ wakeLock = null; }
+  }else if(wakeLock){ try{ await wakeLock.release(); }catch(e){} wakeLock = null; }
+}
+document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="visible") syncWake(); else wakeLock = null; });
+
+/* ============ Icons ============ */
+const ICON_KNIT = `<svg width="60" height="60" viewBox="0 0 64 64" aria-hidden="true">
+<defs><clipPath id="ck"><circle cx="32" cy="40" r="12.2"/></clipPath></defs>
+<circle cx="32" cy="32" r="31" fill="var(--knit-soft)"/>
+<g stroke="var(--knit)" stroke-width="2.4" stroke-linecap="round">
+<line x1="19" y1="11" x2="44" y2="53"/><line x1="45" y1="11" x2="20" y2="53"/></g>
+<circle cx="19" cy="11" r="2.8" fill="var(--knit)"/><circle cx="45" cy="11" r="2.8" fill="var(--knit)"/>
+<circle cx="32" cy="40" r="13.5" fill="var(--knit)"/>
+<g clip-path="url(#ck)" fill="none" stroke="var(--knit-soft)" stroke-width="1.6">
+<circle cx="12" cy="24" r="16"/><circle cx="12" cy="24" r="21"/><circle cx="12" cy="24" r="26"/><circle cx="12" cy="24" r="31"/>
+<circle cx="54" cy="44" r="12"/><circle cx="54" cy="44" r="16.5"/></g></svg>`;
+const ICON_CROCHET = `<svg width="60" height="60" viewBox="0 0 64 64" aria-hidden="true">
+<defs><clipPath id="cc"><circle cx="24" cy="41" r="12.2"/></clipPath></defs>
+<circle cx="32" cy="32" r="31" fill="var(--crochet-soft)"/>
+<circle cx="24" cy="41" r="13.5" fill="var(--crochet)"/>
+<g clip-path="url(#cc)" fill="none" stroke="var(--crochet-soft)" stroke-width="1.6">
+<circle cx="4" cy="26" r="16"/><circle cx="4" cy="26" r="21"/><circle cx="4" cy="26" r="26"/><circle cx="4" cy="26" r="31"/>
+<circle cx="44" cy="48" r="12"/></g>
+<path d="M35 36 C41 31 44 24 47 16" fill="none" stroke="var(--crochet)" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="0.1 3.2"/>
+<line x1="38" y1="55" x2="50" y2="14" stroke="var(--crochet)" stroke-width="2.6" stroke-linecap="round"/>
+<line x1="40.4" y1="46.6" x2="43.4" y2="36.4" stroke="var(--crochet)" stroke-width="5" stroke-linecap="round"/>
+<path d="M50 14 c1.2-3.6 5.4-2.8 4.2 0.6" fill="none" stroke="var(--crochet)" stroke-width="2.4" stroke-linecap="round"/></svg>`;
+const LOGO = `<svg xmlns="http://www.w3.org/2000/svg" width="84" height="84" viewBox="0 0 1024 1024">
+<rect width="1024" height="1024" fill="#6C5CE7"/><defs><clipPath id="b"><circle cx="440" cy="505" r="256"/></clipPath></defs>
+<g transform="translate(860,110) rotate(130.85537625889572)">
+<path d="M0,-17.0 L429.18299234540035,-17.0 L489.18299234540035,0 L429.18299234540035,17.0 L0,17.0 Z" fill="#FFD6AA" stroke="#FFD6AA" stroke-width="6" stroke-linejoin="round"/>
+<circle cx="0" cy="0" r="40.8" fill="#EE9660"/></g>
+<g transform="translate(915,235) rotate(145.99250758026776)" fill="none" stroke-linecap="round">
+<path d="M500.62460986251966,0 L40,0 C-4,0 -8,-44 28,-50" stroke="#FFC440" stroke-width="34"/>
+<line x1="150.1873829587559" y1="0" x2="240.29981273400944" y2="0" stroke="#FFC440" stroke-width="64.6"/></g>
+<circle cx="440" cy="505" r="256" fill="#FFF4E6"/>
+<g clip-path="url(#b)" stroke="#E9D3B6" stroke-width="22" stroke-linecap="round" fill="none"><g transform="rotate(-10 440 505)"><path d="M212.54880091934874,355 Q440,425 667.4511990806512,355"/><path d="M266.6670289859353,300 Q440,370 613.3329710140647,300"/><path d="M374.9222893216614,253 Q440,323 505.0777106783386,253"/></g></g>
+<g clip-path="url(#b)"><path d="M154,593 Q440,633 726,593 L726,698 Q440,738 154,698 Z" fill="#FF8A5B"/><g stroke="#E8693C" stroke-width="10" fill="none"><path d="M154,619 Q440,659 726,619"/><path d="M154,645 Q440,685 726,645"/><path d="M154,671 Q440,711 726,671"/></g></g>
+<g transform="rotate(8 320 653)">
+<rect x="265" y="653" width="110" height="165" rx="16" fill="#E8693C"/>
+<line x1="275" y1="688" x2="365" y2="688" stroke="#FF8A5B" stroke-width="12" stroke-linecap="round"/><line x1="275" y1="728" x2="365" y2="728" stroke="#FF8A5B" stroke-width="12" stroke-linecap="round"/><line x1="275" y1="768" x2="365" y2="768" stroke="#FF8A5B" stroke-width="12" stroke-linecap="round"/><line x1="275" y1="808" x2="365" y2="808" stroke="#FF8A5B" stroke-width="12" stroke-linecap="round"/>
+<line x1="275" y1="818" x2="275" y2="858" stroke="#E8693C" stroke-width="12" stroke-linecap="round"/><line x1="297" y1="818" x2="297" y2="858" stroke="#E8693C" stroke-width="12" stroke-linecap="round"/><line x1="319" y1="818" x2="319" y2="858" stroke="#E8693C" stroke-width="12" stroke-linecap="round"/><line x1="341" y1="818" x2="341" y2="858" stroke="#E8693C" stroke-width="12" stroke-linecap="round"/><line x1="363" y1="818" x2="363" y2="858" stroke="#E8693C" stroke-width="12" stroke-linecap="round"/></g>
+<g fill="#2A2038">
+<ellipse cx="352.0" cy="500" rx="24.0" ry="30.0"/><ellipse cx="528.0" cy="500" rx="24.0" ry="30.0"/>
+<path d="M370.0,564.0 L510.0,564.0 A70.0,70.0 0 0 1 370.0,564.0 Z" stroke="#2A2038" stroke-width="12.0" stroke-linejoin="round"/></g></svg>`;
+const CHECK = `<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`;
+function celebration(){
+  const dots = Array.from({length:10}, (_,i)=>`<i style="--a:${i*36}deg;animation-delay:${.12+i*.02}s"></i>`).join("");
+  return `<div class="cele">${dots}<div class="ring">${CHECK}</div></div>`;
+}
+
+/* ============ Rendern ============ */
+const app = document.getElementById("app");
+function render(){
+  document.body.dataset.craft = view.craft;
+  if(view.name==="home") renderHome();
+  else if(view.name==="list") renderList();
+  else if(view.name==="project") renderProject();
+  else if(view.name==="settings") renderSettings();
+  window.scrollTo(0,0);
+  syncWake();
+}
+function bar(title, back, right){
+  return `<div class="bar">
+    ${back?`<button class="back" data-back="${back}" aria-label="Zurück"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>`:""}
+    <h2>${esc(title)}</h2>${right||""}</div>`;
+}
+function wireBar(){ const b = app.querySelector("[data-back]"); if(b) b.onclick = ()=>{ view.name = b.dataset.back; render(); }; }
+function openProject(p){ view.craft=p.craft; view.projectId=p.id; view.tab="zaehler"; view.partIdx=firstOpenPart(p); view.name="project"; render(); }
+function firstOpenPart(p){ if(p.mode==="free") return 0; const i = p.parts.findIndex((_,k)=>!partDone(p,k)); return i<0 ? 0 : i; }
+
+/* ---------- Start ---------- */
+function backupDue(){
+  if(!state.projects.length) return false;
+  const ref = state.settings.lastBackup || Math.min(...state.projects.map(p=>p.created||Date.now()));
+  return Date.now() - ref > BACKUP_DAYS*DAY;
+}
+function continueLine(p){
+  if(p.mode==="free"){ const c=(p.counters||[])[0]; return c ? `${esc(c.name)}: ${c.value||0}` : "Freies Zählen"; }
+  const i = firstOpenPart(p), part = p.parts[i], rows = projectRows(p,i);
+  return `${p.parts.length>1?esc(part.name)+" · ":""}${unitOf(p)} ${Math.min((part.row||0)+1, rows.length)} von ${rows.length}`;
+}
+function renderHome(){
+  const active = state.projects.filter(p=>p.status!=="fertig").sort((a,b)=>b.updated-a.updated)[0];
+  const n = c => state.projects.filter(p=>p.craft===c && p.status!=="fertig").length;
+  const sub = c => { const k=n(c); return k ? `${k} laufende${k===1?"s Projekt":" Projekte"}` : "Noch kein Projekt"; };
+  const installHint = isIOS && !isStandalone && !state.settings.hideInstall;
+  app.innerHTML = `
+  <div class="bar" style="justify-content:flex-end"><button class="icon-btn" data-go="settings" aria-label="Einstellungen">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
+  </button></div>
+  <div class="wrap">
+    <div class="hero"><div class="logo">${LOGO}</div><h1>Lena Del Yarn</h1><p>Reihen zählen, ohne den Faden zu verlieren</p></div>
+    ${installHint?`<div class="hint"><div><b>Als App auf den Home-Bildschirm</b>In Safari auf Teilen tippen, dann „Zum Home-Bildschirm“. Startet dann wie eine richtige App, und deine Projekte sind sicherer aufgehoben.</div><button class="x" data-hideinstall aria-label="Ausblenden">×</button></div>`:""}
+    ${backupDue()?`<div class="hint"><div><b>Zeit für eine Sicherung</b>Deine Projekte liegen nur auf diesem Handy. ${state.settings.lastBackup?"Letzte Sicherung am "+fmtDate(state.settings.lastBackup)+".":"Du hast noch nie gesichert."}<br><button class="go" data-backup>Jetzt sichern</button></div></div>`:""}
+    ${active?`<button class="cont" data-c="${active.craft}" data-cont><small>WEITER MIT</small><span class="cn">${esc(active.name)}</span><span class="cm">${continueLine(active)}</span>${progress(active)!==null?`<div class="track"><i style="width:${progress(active)}%"></i></div>`:""}</button>`:""}
+    <div class="crafts">
+      <button class="craft" data-pick="stricken">${ICON_KNIT}<span><span class="cname">Stricken</span><span class="csub">${sub("stricken")}</span></span></button>
+      <button class="craft" data-pick="haekeln">${ICON_CROCHET}<span><span class="cname">Häkeln</span><span class="csub">${sub("haekeln")}</span></span></button>
+    </div>
+  </div>`;
+  app.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{ view.craft=b.dataset.pick; view.name="list"; render(); });
+  app.querySelector("[data-go=settings]").onclick=()=>{ view.name="settings"; render(); };
+  const c = app.querySelector("[data-cont]"); if(c) c.onclick=()=>openProject(active);
+  const h = app.querySelector("[data-hideinstall]"); if(h) h.onclick=()=>{ state.settings.hideInstall=true; save(); renderHome(); };
+  const bk = app.querySelector("[data-backup]"); if(bk) bk.onclick=()=>{ doExport(); renderHome(); };
+}
+
+/* ---------- Projektliste ---------- */
+function renderList(){
+  const list = state.projects.filter(p=>p.craft===view.craft).sort((a,b)=>(a.status==="fertig")-(b.status==="fertig") || b.updated-a.updated);
+  const lib = allPatterns().filter(t=>t.craft===view.craft);
+  app.innerHTML = `
+  ${bar(craftLabel(view.craft), "home")}
+  <div class="wrap">
+    ${list.length ? `<div class="plist">${list.map(projectCard).join("")}</div>` :
+      `<div class="empty"><h3>Noch nichts angefangen</h3><p>Tippe auf das Plus, um eine Anleitung einzuspielen, ein Projekt zu starten oder frei zu zählen.</p></div>`}
+    <button class="librow" data-lib><span>${lib.length ? `${lib.length} Anleitung${lib.length===1?"":"en"} in der Bibliothek` : "Noch keine Anleitung"}</span><span>${lib.length?"Verwalten":"Einspielen"}</span></button>
+  </div>
+  <button class="fab" data-new aria-label="Neues Projekt">+</button>`;
+  wireBar();
+  app.querySelectorAll("[data-open]").forEach(el=>el.onclick=()=>openProject(state.projects.find(p=>p.id===el.dataset.open)));
+  app.querySelector("[data-new]").onclick = newProjectSheet;
+  app.querySelector("[data-lib]").onclick = ()=> lib.length ? librarySheet() : importSheet(view.craft);
+}
+function projectCard(p){
+  const pct = progress(p);
+  const sub = p.mode==="free" ? "Freies Zählen" : `${p.designer?p.designer+" · ":""}Größe ${p.sizeLabel||"–"}${p.parts.length>1?" · "+p.parts.length+" Teile":""}`;
+  return `<button class="pcard ${p.status==="fertig"?"done":""}" data-open="${p.id}">
+    <div class="prow"><span class="pname">${esc(p.name)}</span>${pct!==null?`<span class="pct">${p.status==="fertig"?"fertig":pct+"%"}</span>`:(p.status==="fertig"?`<span class="pct">fertig</span>`:"")}</div>
+    <div class="pmeta">${esc(sub)}</div>
+    ${pct!==null?`<div class="track"><i style="width:${pct}%"></i></div>`:""}</button>`;
+}
+
+/* ---------- Bibliothek ---------- */
+function librarySheet(){
+  const lib = allPatterns().filter(t=>t.craft===view.craft);
+  sheet(`<h3>Bibliothek · ${craftLabel(view.craft)}</h3>
+    <p class="sub">Anleitungen auf diesem Gerät. Laufende Projekte bleiben erhalten, auch wenn du eine Anleitung löschst.</p>
+    ${lib.map(t=>`<button class="opt" data-t="${esc(t.id)}"><b>${esc(t.name)}</b><span>${esc(t.designer||"")}${t.sizes?" · "+t.sizes.map(esc).join(", "):""}</span></button>`).join("")}
+    <button class="btn ghost" data-imp>Weitere Anleitung einspielen</button>
+    <button class="btn ghost" data-close>Schließen</button>`, el=>{
+    el.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{ closeSheet(); patternSheet(allPatterns().find(t=>t.id===b.dataset.t)); });
+    el.querySelector("[data-imp]").onclick=()=>{ closeSheet(); importSheet(view.craft); };
+  });
+}
+function patternSheet(t){
+  const inUse = state.projects.filter(p=>p.patternId===t.id).length;
+  sheet(`<h3>${esc(t.name)}</h3>
+    <p class="sub">${esc(t.designer||"")}${inUse?` · in ${inUse} Projekt${inUse===1?"":"en"} benutzt`:""}</p>
+    <button class="btn" data-start>Projekt damit starten</button>
+    <button class="btn ghost" data-ren>Umbenennen</button>
+    <button class="btn ghost danger" data-del>Aus der Bibliothek löschen</button>
+    <button class="btn ghost" data-close>Schließen</button>`, el=>{
+    el.querySelector("[data-start]").onclick=()=>{ closeSheet(); sizeSheet(t); };
+    el.querySelector("[data-ren]").onclick=()=>{ closeSheet(); textSheet("Anleitung umbenennen","Name",t.name,v=>{ t.name=v; save(); renderList(); }); };
+    el.querySelector("[data-del]").onclick=()=>{ closeSheet(); confirmSheet(`„${t.name}“ löschen?`, "Die Anleitung verschwindet aus der Bibliothek. Projekte, die schon laufen, behalten ihre Kopie.", "Löschen", ()=>{
+      state.library = state.library.filter(x=>x.id!==t.id); save(); renderList(); toast("Anleitung gelöscht"); }); };
+  });
+}
+
+/* ============ Projekt ============ */
+function currentProject(){ return state.projects.find(p=>p.id===view.projectId); }
+function renderProject(){
+  const p = currentProject();
+  if(!p){ view.name="list"; return render(); }
+  const right = `<button class="icon-btn" data-menu aria-label="Projekt-Menü"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button>`;
+  const tabs = p.mode==="free" ? [["zaehler","Zähler"],["info","Info"]] : [["zaehler","Zähler"],["anleitung","Anleitung"],["info","Info"]];
+  app.innerHTML = `${bar(p.name, "list", right)}
+  <div class="wrap">
+    <div class="tabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" data-tab="${k}" aria-selected="${view.tab===k}">${l}</button>`).join("")}</div>
+    <div id="tabbody"></div></div>`;
+  wireBar();
+  app.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{ view.tab=b.dataset.tab; renderProject(); window.scrollTo(0,0); });
+  app.querySelector("[data-menu]").onclick = ()=>projectMenu(p);
+  const body = document.getElementById("tabbody");
+  if(view.tab==="zaehler"){ body.innerHTML = p.mode==="free" ? freeBody(p) : counterBody(p); p.mode==="free" ? wireFree(p) : wireCounter(p); }
+  else if(view.tab==="anleitung"){ body.innerHTML = patternBody(p); wirePartSel(); }
+  else { body.innerHTML = infoBody(p); wireInfo(p); }
+  syncWake();
+}
+function partSel(p, idx, mark){
+  if(p.parts.length<2) return "";
+  return `<div class="partsel">${p.parts.map((pt,i)=>`<button data-part="${i}" aria-pressed="${i===idx}">${esc(pt.name)}${mark&&partDone(p,i)?" ✓":""}</button>`).join("")}</div>`;
+}
+function wirePartSel(){ app.querySelectorAll("[data-part]").forEach(b=>b.onclick=()=>{ view.partIdx=+b.dataset.part; renderProject(); }); }
+
+/* ---- Zähler nach Anleitung ---- */
+function changeWord(d){ return (d>0?"Zunahme":"Abnahme") + ` (${d>0?"+":""}${d} M)`; }
+function counterBody(p){
+  const idx = Math.min(view.partIdx, p.parts.length-1), part = p.parts[idx], rows = projectRows(p, idx);
+  const U = unitOf(p), Us = unitsOf(p);
+  const done = part.row||0;
+  const extras = auxAndNote(part);
+
+  if(done >= rows.length){
+    const allDone = p.parts.every((_,i)=>partDone(p,i));
+    const next = p.parts.findIndex((_,i)=>!partDone(p,i));
+    return `${partSel(p, idx, true)}
+      <div class="finish">${celebration()}
+        <h3>${allDone ? (p.status==="fertig"?"Fertig!":"Geschafft!") : esc(part.name)+" ist fertig"}</h3>
+        <p>${allDone ? `${totalRows(p)} ${Us} ${daysText(p)}. Jetzt nur noch die Fäden vernähen.` : `Weiter mit „${esc(p.parts[next].name)}“.`}</p>
+        ${!allDone?`<button class="btn" data-nextpart="${next}">Zu „${esc(p.parts[next].name)}“</button>`:""}
+        ${allDone && p.status!=="fertig"?`<button class="btn" data-complete>Projekt abschließen</button>`:""}
+      </div>
+      <div class="undo"><button data-minus>− Zurück</button><button data-jump>Springen</button></div>${extras}`;
+  }
+
+  const cur = rows[done];
+  const stitchesNow = done>0 ? rows[done-1].stitches : castOnOf(part, p.sizeIdx||0);
+  const blockStart = done - (cur.rowInBlock-1);
+  const inBlock = cur.blockLen>1 && cur.repeatTotal>1;
+  const dots = inBlock ? `<div class="blockbar">${Array.from({length:cur.blockLen},(_,i)=>{
+    const r = rows[blockStart+i]; return `<i class="${i+1<cur.rowInBlock?"on":(i+1===cur.rowInBlock?"cur":"")}${r&&r.delta?" chg":""}"></i>`; }).join("")}</div>` : "";
+  let hint = "";
+  if(!cur.delta){
+    const k = rows.findIndex((r,i)=>i>done && r.delta);
+    if(k>0){ const dist = k-done; hint = dist===1 ? `Nächste ${U}: ${changeWord(rows[k].delta)}` : `${changeWord(rows[k].delta).split(" (")[0]} in ${dist} ${Us}`; }
+  }
+  const top = inBlock ? `${U} ${cur.rowInBlock} von ${cur.blockLen}` : `${U} ${done+1}`;
+  return `${partSel(p, idx, true)}
+    <div class="section-name"><span>${esc(cur.sectionName)}</span><span>${inBlock?`${U} ${done+1} von ${rows.length}`:`von ${rows.length} ${Us}`}</span></div>
+    <div class="instr ${cur.delta?"change":""}">
+      <div class="top"><span class="rw">${top}</span><span class="side">${cur.delta?`<span class="badge">${cur.delta>0?"+":""}${cur.delta} M</span>`:""}${esc(cur.side)}</span></div>
+      <p>${esc(cur.text)}</p>${dots}
+      ${hint?`<div class="nexthint">${hint}</div>`:""}
+    </div>
+    <div class="stats">
+      <div class="stat"><b>${cur.repeatTotal>1 ? cur.repeat+"/"+cur.repeatTotal : "–"}</b><span>Wiederholung</span></div>
+      <div class="stat"><b>${stitchesNow}</b><span>Maschen</span></div>
+      <div class="stat"><b>${Math.round(done/rows.length*100)}%</b><span>Fortschritt</span></div>
+    </div>
+    <button class="plus" data-plus><span class="sign">+</span><span class="lbl">${U} ${done+1} fertig</span></button>
+    <div class="undo"><button data-minus>− Zurück</button><button data-jump>Springen</button></div>
+    ${extras}
+    <div class="total">${p.parts.length>1?esc(part.name)+" · ":""}${done} von ${rows.length} ${Us} gezählt</div>`;
+}
+function auxAndNote(part){
+  const aux = (part.aux||[]).map((a,i)=>`<div class="aux"><button class="an" data-auxedit="${i}">${esc(a.name)}</button>
+    <button class="rnd sm" data-auxminus="${i}" aria-label="${esc(a.name)} minus">−</button><span class="av">${a.value||0}</span>
+    <button class="rnd sm big" data-auxplus="${i}" aria-label="${esc(a.name)} plus">+</button></div>`).join("");
+  return `${aux}${part.note?`<button class="pnote" data-note>${esc(part.note)}</button>`:""}
+    <div class="links"><button data-auxadd>+ Nebenzähler</button><button data-note>${part.note?"Notiz ändern":"+ Notiz"}</button></div>`;
+}
+let lastPlus = 0;
+function wireCounter(p){
+  const idx = Math.min(view.partIdx, p.parts.length-1), part = p.parts[idx], rows = projectRows(p, idx), U = unitOf(p);
+  const touch = ()=>{ p.updated = Date.now(); save(); renderProject(); };
+  wirePartSel();
+  const plus = app.querySelector("[data-plus]");
+  if(plus) plus.onclick = ()=>{
+    const now = Date.now(), gap = now - lastPlus;
+    if(gap < 450) return;                // Doppeltipp abfangen
+    lastPlus = now;
+    const before = part.row||0;
+    part.row = Math.min(before+1, rows.length); touch();
+    if(gap < 2500) toast(`${U} ${before+1} gezählt`, "Rückgängig", ()=>{ part.row = before; touch(); });
+  };
+  app.querySelectorAll("[data-minus]").forEach(b=>b.onclick = ()=>{ part.row = Math.max((part.row||0)-1, 0); touch(); });
+  app.querySelectorAll("[data-jump]").forEach(b=>b.onclick = ()=>jumpSheet(p, idx));
+  const np = app.querySelector("[data-nextpart]"); if(np) np.onclick = ()=>{ view.partIdx = +np.dataset.nextpart; renderProject(); };
+  const comp = app.querySelector("[data-complete]"); if(comp) comp.onclick = ()=>{ p.status="fertig"; p.finished=Date.now(); touch(); };
+  wireExtras(p, part, touch);
+}
+function wireExtras(p, part, touch){
+  app.querySelectorAll("[data-auxplus]").forEach(b=>b.onclick=()=>{ const a=part.aux[+b.dataset.auxplus]; a.value=(a.value||0)+1; touch(); });
+  app.querySelectorAll("[data-auxminus]").forEach(b=>b.onclick=()=>{ const a=part.aux[+b.dataset.auxminus]; a.value=Math.max(0,(a.value||0)-1); touch(); });
+  app.querySelectorAll("[data-auxedit]").forEach(b=>b.onclick=()=>auxSheet(part, +b.dataset.auxedit, touch));
+  const add = app.querySelector("[data-auxadd]"); if(add) add.onclick=()=>auxSheet(part, null, touch);
+  app.querySelectorAll("[data-note]").forEach(b=>b.onclick=()=>{
+    sheet(`<h3>Notiz${p.parts.length>1?" zu „"+esc(part.name)+"“":""}</h3>
+      <div class="field"><textarea id="nt" placeholder="z. B. Maschenmarkierer nach der 3. Masche">${esc(part.note||"")}</textarea></div>
+      <button class="btn" data-ok>Speichern</button><button class="btn ghost" data-close>Abbrechen</button>`, el=>{
+      el.querySelector("[data-ok]").onclick=()=>{ part.note = el.querySelector("#nt").value.trim(); closeSheet(); touch(); };
+    });
+  });
+}
+function auxSheet(part, i, touch){
+  const a = i===null ? {name:"", value:0} : part.aux[i];
+  sheet(`<h3>${i===null?"Nebenzähler":"Nebenzähler bearbeiten"}</h3>
+    <p class="sub">Läuft unabhängig von der Anleitung – etwa für Maschen in der Reihe, Farbwechsel oder eine zweite Formung „gleichzeitig“.</p>
+    <div class="field"><label for="an">Name</label><input id="an" value="${esc(a.name)}" placeholder="z. B. Ausschnitt"></div>
+    <div class="field"><label for="av">Stand</label><input id="av" type="number" inputmode="numeric" value="${a.value||0}"></div>
+    <button class="btn" data-ok>${i===null?"Hinzufügen":"Speichern"}</button>
+    ${i!==null?`<button class="btn ghost danger" data-del>Löschen</button>`:""}
+    <button class="btn ghost" data-close>Abbrechen</button>`, el=>{
+    el.querySelector("[data-ok]").onclick=()=>{
+      const n = {name: el.querySelector("#an").value.trim()||"Zähler", value: Math.max(0, parseInt(el.querySelector("#av").value||"0",10))};
+      part.aux = part.aux||[]; if(i===null) part.aux.push(n); else part.aux[i]=n; closeSheet(); touch(); };
+    const d = el.querySelector("[data-del]"); if(d) d.onclick=()=>{ part.aux.splice(i,1); closeSheet(); touch(); };
+  });
+}
+function jumpSheet(p, idx){
+  const part = p.parts[idx], rows = projectRows(p, idx), U = unitOf(p);
+  const secs = []; rows.forEach((r,i)=>{ if(!secs.length || secs[secs.length-1].idx!==r.sectionIdx) secs.push({idx:r.sectionIdx, name:r.sectionName, start:i}); });
+  sheet(`<h3>Springen</h3>
+    <p class="sub">Gezählt: ${part.row||0} von ${rows.length} ${unitsOf(p)}</p>
+    <div class="field"><label for="jr">Fertig gestrickte ${unitsOf(p)}</label><input id="jr" type="number" inputmode="numeric" min="0" max="${rows.length}" value="${part.row||0}"></div>
+    <button class="btn" data-ok>Übernehmen</button>
+    <p class="sub" style="margin:18px 0 8px">Oder an den Anfang eines Abschnitts</p>
+    ${secs.map(s=>`<button class="opt" data-sec="${s.start}"><b>${esc(s.name)}</b><span>ab ${U} ${s.start+1}</span></button>`).join("")}
+    <button class="btn ghost" data-close>Abbrechen</button>`, el=>{
+    const set = v=>{ part.row = Math.max(0, Math.min(rows.length, v)); p.updated=Date.now(); save(); closeSheet(); renderProject(); };
+    el.querySelector("[data-ok]").onclick = ()=>set(parseInt(el.querySelector("#jr").value||"0",10));
+    el.querySelectorAll("[data-sec]").forEach(b=>b.onclick=()=>set(+b.dataset.sec));
+  });
+}
+
+/* ---- Freies Zählen ---- */
+function freeBody(p){
+  const cs = p.counters||[];
+  if(!cs.length) return `<div class="empty"><h3>Noch kein Zähler</h3><p>Leg einen Zähler an – zum Beispiel einen für die ${unitsOf(p)} und einen für die Wiederholungen.</p></div><button class="btn" data-addc>Zähler hinzufügen</button>`;
+  return cs.map((c,i)=>`<div class="counter">
+      <div class="chead"><span class="cname">${esc(c.name)}</span><button class="icon-btn" data-cedit="${i}" aria-label="Zähler bearbeiten"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 20h4L20 8l-4-4L4 16v4z"/></svg></button></div>
+      <div class="cbody"><button class="rnd" data-cminus="${i}" aria-label="Minus">−</button><span class="val">${c.value||0}</span><button class="rnd big" data-cplus="${i}" aria-label="Plus">+</button></div>
+      ${c.every>0?`<div class="crep"><span>Wiederholung alle ${c.every}</span><b>${Math.floor((c.value||0)/c.every)}${c.repTotal?" / "+c.repTotal:""}</b></div>`:""}
+    </div>`).join("") + `<button class="btn ghost" data-addc>Weiteren Zähler hinzufügen</button>`;
+}
+function wireFree(p){
+  const touch = ()=>{ p.updated=Date.now(); save(); renderProject(); };
+  app.querySelectorAll("[data-cplus]").forEach(b=>b.onclick=()=>{
+    const now=Date.now(); if(now-lastPlus<450) return; lastPlus=now;
+    const c=p.counters[+b.dataset.cplus]; c.value=(c.value||0)+1; touch(); });
+  app.querySelectorAll("[data-cminus]").forEach(b=>b.onclick=()=>{ const c=p.counters[+b.dataset.cminus]; c.value=Math.max(0,(c.value||0)-1); touch(); });
+  app.querySelectorAll("[data-cedit]").forEach(b=>b.onclick=()=>counterSheet(p, +b.dataset.cedit));
+  app.querySelectorAll("[data-addc]").forEach(b=>b.onclick=()=>counterSheet(p, null));
+}
+function counterSheet(p, i){
+  const c = i===null ? {name:unitsOf(p), value:0, every:0, repTotal:0} : p.counters[i];
+  sheet(`<h3>${i===null?"Neuer Zähler":"Zähler bearbeiten"}</h3>
+    <div class="field"><label for="cn">Name</label><input id="cn" value="${esc(c.name)}"></div>
+    <div class="field"><label for="cv">Aktueller Stand</label><input id="cv" type="number" inputmode="numeric" value="${c.value||0}"></div>
+    <div class="two"><div class="field"><label for="ce">Wiederholung alle</label><input id="ce" type="number" inputmode="numeric" value="${c.every||0}"></div>
+    <div class="field"><label for="ct">Geplante Wdh.</label><input id="ct" type="number" inputmode="numeric" value="${c.repTotal||0}"></div></div>
+    <p class="sub" style="margin-top:-4px">0 heißt aus bzw. offen.</p>
+    <button class="btn" data-ok>${i===null?"Zähler anlegen":"Speichern"}</button>
+    ${i!==null?`<button class="btn ghost danger" data-del>Zähler löschen</button>`:""}
+    <button class="btn ghost" data-close>Abbrechen</button>`, el=>{
+    el.querySelector("[data-ok]").onclick=()=>{
+      const num = id=>Math.max(0, parseInt(el.querySelector(id).value||"0",10));
+      const n = {name: el.querySelector("#cn").value.trim()||"Zähler", value:num("#cv"), every:num("#ce"), repTotal:num("#ct")};
+      p.counters = p.counters||[]; if(i===null) p.counters.push(n); else p.counters[i]=n;
+      p.updated=Date.now(); save(); closeSheet(); renderProject(); };
+    const d = el.querySelector("[data-del]"); if(d) d.onclick=()=>{ p.counters.splice(i,1); p.updated=Date.now(); save(); closeSheet(); renderProject(); };
+  });
+}
+
+/* ---- Anleitung ---- */
+function patternBody(p){
+  const idx = Math.min(view.partIdx, p.parts.length-1), part = p.parts[idx], rows = projectRows(p, idx), cur = part.row||0, U = unitOf(p), Us = unitsOf(p);
+  const curRow = rows[Math.min(cur, rows.length-1)];
+  const secs = [];
+  rows.forEach((r,i)=>{ const s = secs[secs.length-1];
+    if(!s || s.idx!==r.sectionIdx) secs.push({idx:r.sectionIdx, name:r.sectionName, reps:r.repeatTotal, blockLen:r.blockLen, start:i, end:i});
+    else s.end = i; });
+  const range = (a,b)=> a===b ? `${U} ${a+1}` : `${Us} ${a+1}–${b+1}`;
+  const deltaTag = (r, repeated)=> r.delta ? ` <em>${r.delta>0?"+":""}${r.delta} M${repeated?"":" → "+r.stitches}</em>` : "";
+  return `${partSel(p, idx, false)}
+    <div class="note"><h3>Anschlag</h3><p>${castOnOf(part, p.sizeIdx||0) ? castOnOf(part, p.sizeIdx||0)+" Maschen" : "Ohne Anschlag"}${p.meta&&p.meta.needle?" · "+esc(p.meta.needle):""}</p></div>
+    ${secs.map(s=>{
+      const here = cur<rows.length && cur>=s.start && cur<=s.end;
+      const def = part.sections[s.idx];
+      let body;
+      if(s.reps>1 && s.blockLen===1){
+        const r = rows[s.start];
+        body = `<div class="rline ${here?"now":""}"><span class="n">${range(s.start,s.end)}</span><span>${esc(r.text)}${deltaTag(r,true)}</span></div>`;
+      }else if(s.reps>1){
+        body = (here?`<div class="rline"><span class="n"></span><span style="color:var(--muted)">Aktuell Durchgang ${curRow.repeat} von ${s.reps}</span></div>`:"") +
+          def.rows.map((_,ri)=>{ const r = rows[s.start+ri];
+            return `<div class="rline ${here&&curRow.rowInBlock===ri+1?"now":""}"><span class="n">${ri+1}. ${esc(r.side)}</span><span>${esc(r.text)}${deltaTag(r,true)}</span></div>`; }).join("");
+      }else{
+        body = rows.slice(s.start, s.end+1).map((r,k)=>`<div class="rline ${cur===s.start+k?"now":""}"><span class="n">${U==="Runde"?"Rd":"R"} ${s.start+k+1} ${esc(r.side)}</span><span>${esc(r.text)}${deltaTag(r,false)}</span></div>`).join("");
+      }
+      return `<details class="sec" ${here?"open":""}><summary><span>${esc(s.name)}${s.reps>1?` · ${s.reps}×`:""}</span><span>${range(s.start,s.end)}</span></summary><div class="rows">${body}</div></details>`;
+    }).join("")}
+    ${(p.glossary||[]).length?`<div class="note"><h3>Abkürzungen</h3>${p.glossary.map(g=>`<p><b>${esc(g.term)}</b> — ${esc(g.text)}</p>`).join("")}</div>`:""}
+    ${(p.notes||[]).map(n=>`<div class="note"><h3>${esc(n.title)}</h3><p>${esc(n.text)}</p></div>`).join("")}`;
+}
+
+/* ---- Info ---- */
+function infoBody(p){
+  const m = p.meta||{};
+  const needle = p.craft==="haekeln" ? "Häkelnadel" : "Nadel";
+  return `${p.intro?`<div class="note"><h3>${esc(p.name)}</h3><p>${esc(p.intro)}</p></div>`:""}
+    <div class="field"><label for="f-yarn">Garn</label><input id="f-yarn" value="${esc(m.yarn||"")}" placeholder="Marke, Qualität, Farbe"></div>
+    <div class="two"><div class="field"><label for="f-lot">Farbpartie</label><input id="f-lot" value="${esc(m.dyeLot||"")}" placeholder="z. B. 2317"></div>
+    <div class="field"><label for="f-needle">${needle}</label><input id="f-needle" value="${esc(m.needle||"")}" placeholder="z. B. 3,5 mm"></div></div>
+    <div class="field"><label for="f-gauge">Maschenprobe</label><input id="f-gauge" value="${esc(m.gauge||"")}" placeholder="z. B. 22 M x 30 R = 10 cm"></div>
+    <div class="field"><label for="f-notes">Notizen</label><textarea id="f-notes" placeholder="Was du beim nächsten Mal anders machen würdest …">${esc(m.notes||"")}</textarea></div>
+    <button class="btn" data-savemeta>Speichern</button>
+    <div class="note" style="margin-top:18px"><h3>Projekt</h3>
+      <p>${p.mode==="free"?"Freies Zählen":`Größe ${esc(p.sizeLabel||"–")} · ${totalRows(p)} ${unitsOf(p)} insgesamt`}${p.designer?" · "+esc(p.designer):""}</p>
+      <p>Begonnen am ${fmtDate(p.created)}${p.finished?` · fertig am ${fmtDate(p.finished)}`:""}</p></div>`;
+}
+function wireInfo(p){
+  app.querySelector("[data-savemeta]").onclick = ()=>{
+    p.meta = p.meta||{};
+    [["yarn","#f-yarn"],["dyeLot","#f-lot"],["needle","#f-needle"],["gauge","#f-gauge"],["notes","#f-notes"]].forEach(([k,s])=>p.meta[k]=app.querySelector(s).value);
+    p.updated = Date.now(); save(); toast("Gespeichert");
+  };
+}
+
+/* ---- Projekt-Menü ---- */
+function projectMenu(p){
+  sheet(`<h3>${esc(p.name)}</h3>
+    <button class="opt" data-rename><b>Umbenennen</b><span>Name des Projekts ändern</span></button>
+    <button class="opt" data-status><b>${p.status==="fertig"?"Wieder als laufend markieren":"Als fertig markieren"}</b><span>${p.status==="fertig"?"Taucht wieder oben in der Liste auf":"Rutscht in der Liste nach unten"}</span></button>
+    <button class="opt" data-reset><b>Zähler zurücksetzen</b><span>Alles wieder auf Anfang</span></button>
+    <button class="btn ghost danger" data-delete>Projekt löschen</button>
+    <button class="btn ghost" data-close>Schließen</button>`, el=>{
+    el.querySelector("[data-rename]").onclick=()=>{ closeSheet(); textSheet("Umbenennen","Name",p.name,v=>{ p.name=v; p.updated=Date.now(); save(); renderProject(); }); };
+    el.querySelector("[data-status]").onclick=()=>{ const f = p.status!=="fertig"; p.status = f?"fertig":"laufend"; p.finished = f?Date.now():null; p.updated=Date.now(); save(); closeSheet(); renderProject(); };
+    el.querySelector("[data-reset]").onclick=()=>{ closeSheet(); confirmSheet("Zähler zurücksetzen?", "Alle Zählerstände dieses Projekts gehen auf null.", "Zurücksetzen", ()=>{
+      p.parts.forEach(pt=>{ pt.row=0; (pt.aux||[]).forEach(a=>a.value=0); }); (p.counters||[]).forEach(c=>c.value=0);
+      p.status="laufend"; p.finished=null; p.updated=Date.now(); save(); toast("Zurückgesetzt"); renderProject(); }); };
+    el.querySelector("[data-delete]").onclick=()=>{ closeSheet(); confirmSheet("Projekt löschen?", "Der Zählerstand geht dabei verloren. Das lässt sich nicht rückgängig machen.", "Löschen", ()=>{
+      state.projects = state.projects.filter(x=>x.id!==p.id); save(); view.name="list"; render(); toast("Gelöscht"); }); };
+  });
+}
+
+/* ============ Neues Projekt ============ */
+function newProjectSheet(){
+  const pats = allPatterns().filter(t=>t.craft===view.craft);
+  sheet(`<h3>Neues Projekt</h3>
+    <p class="sub">Aus der Bibliothek starten oder einfach frei mitzählen.</p>
+    ${pats.map(t=>`<button class="opt" data-pat="${esc(t.id)}"><b>${esc(t.name)}</b><span>${esc(t.designer||"")}${t.sizes?" · Größen: "+t.sizes.map(esc).join(", "):""}</span></button>`).join("")}
+    <button class="opt" data-free><b>Freies Zählen</b><span>Eigene Zähler ohne hinterlegte Anleitung</span></button>
+    <button class="opt" data-imp><b>Anleitung einspielen</b><span>JSON-Datei zu ${craftLabel(view.craft)} hinzufügen</span></button>
+    <button class="btn ghost" data-close>Abbrechen</button>`, el=>{
+    el.querySelectorAll("[data-pat]").forEach(b=>b.onclick=()=>{ closeSheet(); sizeSheet(allPatterns().find(t=>t.id===b.dataset.pat)); });
+    el.querySelector("[data-free]").onclick=()=>{ closeSheet(); textSheet("Freies Zählen","Name des Projekts","",v=>createFree(v),"z. B. Mütze für Papa","Projekt anlegen"); };
+    el.querySelector("[data-imp]").onclick=()=>{ closeSheet(); importSheet(view.craft); };
+  });
+}
+function sizeSheet(t){
+  const sizes = t.sizes && t.sizes.length ? t.sizes : ["Einheitsgröße"];
+  if(sizes.length===1) return createFromPattern(t, 0);
+  sheet(`<h3>${esc(t.name)}</h3>
+    <p class="sub">Welche Größe? Alle Zahlen in der Anleitung richten sich danach.</p>
+    ${sizes.map((s,i)=>`<button class="opt" data-size="${i}"><b>${esc(s)}</b><span>${t.parts.reduce((n,pt)=>n+buildRows(pt,i).length,0)} ${unitsOf(t)} insgesamt</span></button>`).join("")}
+    <button class="btn ghost" data-close>Abbrechen</button>`, el=>{
+    el.querySelectorAll("[data-size]").forEach(b=>b.onclick=()=>{ closeSheet(); createFromPattern(t, +b.dataset.size); });
+  });
+}
+function createFromPattern(t, sizeIdx){
+  const p = {id:uid(), patternId:t.id, craft:t.craft, mode:"pattern", name:t.name, designer:t.designer||"", unit:t.unit||"",
+    sizeIdx, sizeLabel:(t.sizes&&t.sizes[sizeIdx])||"Einheitsgröße",
+    intro:t.intro||"", glossary:t.glossary||[], notes:t.notes||[], meta:Object.assign({}, t.meta||{}),
+    parts:(t.parts||[]).map(pt=>({name:pt.name, castOn:pt.castOn, sections:pt.sections, row:0, aux:[], note:""})),
+    status:"laufend", created:Date.now(), updated:Date.now()};
+  state.projects.push(p); save(); openProject(p);
+}
+function createFree(name){
+  const p = {id:uid(), craft:view.craft, mode:"free", name:name||"Freies Projekt", meta:{}, parts:[],
+    counters:[{name:unitsOf({craft:view.craft}), value:0, every:0, repTotal:0}],
+    status:"laufend", created:Date.now(), updated:Date.now()};
+  state.projects.push(p); save(); openProject(p);
+}
+
+/* ============ Einstellungen / Sicherung ============ */
+function renderSettings(){
+  app.innerHTML = `${bar("Einstellungen","home")}
+  <div class="wrap">
+    <div class="note"><h3>Beim Zählen</h3><p>Hält das Display an, solange der Zähler offen ist. Braucht iOS 16.4 oder neuer.${wakeSupported?"":" Dieses Gerät oder diese Ansicht unterstützt es nicht."}</p></div>
+    <button class="btn ${state.settings.wake?"":"ghost"}" data-wake>${state.settings.wake?"Display bleibt an":"Display geht normal aus"}</button>
+    <div class="note" style="margin-top:22px"><h3>Sicherung</h3><p>Projekte und Anleitungen liegen nur auf diesem Gerät. ${state.settings.lastBackup?"Zuletzt gesichert am "+fmtDate(state.settings.lastBackup)+".":"Noch nie gesichert."} Am besten in der Dateien-App oder per Nachricht an dich selbst ablegen.</p></div>
+    <button class="btn" data-export>Jetzt sichern</button>
+    <button class="btn ghost" data-import>Sicherung einspielen</button>
+    ${isIOS && !isStandalone?`<div class="note" style="margin-top:22px"><h3>Auf den Home-Bildschirm</h3><p>In Safari auf Teilen tippen, dann „Zum Home-Bildschirm“.</p></div>`:""}
+    <div class="note" style="margin-top:22px"><h3>Bibliothek</h3><p>${allPatterns().length} Anleitung${allPatterns().length===1?"":"en"} auf diesem Gerät. Neue spielst du bei Stricken oder Häkeln ein.</p></div>
+    <div class="note"><h3>Version</h3><p>Lena Del Yarn V${VERSION}</p></div>
+  </div>`;
+  wireBar();
+  app.querySelector("[data-wake]").onclick = ()=>{ state.settings.wake = !state.settings.wake; save(); renderSettings(); };
+  app.querySelector("[data-export]").onclick = ()=>{ doExport(); renderSettings(); };
+  app.querySelector("[data-import]").onclick = ()=>importSheet(null);
+}
+function doExport(){
+  const data = JSON.stringify({kind:"lena-backup", version:1, exported:new Date().toISOString(), projects:state.projects, library:state.library, settings:state.settings}, null, 1);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([data], {type:"application/json"}));
+  a.download = `lena-del-yarn-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+  state.settings.lastBackup = Date.now(); save();
+  toast("Sicherung erstellt");
+}
+function importSheet(craft){
+  sheet(`<h3>${craft?"Anleitung einspielen":"Sicherung einspielen"}</h3>
+    <p class="sub">${craft ? `Wähle die JSON-Datei der Anleitung oder füge ihren Text ein. Sie landet bei ${craftLabel(craft)} und bleibt nur auf diesem Gerät.` : "Eine Sicherung ersetzt alle Projekte und Anleitungen auf diesem Gerät."}</p>
+    <div class="field"><input type="file" id="imf" accept=".json,application/json,text/plain"></div>
+    <div class="field"><label for="imt">Oder Text einfügen</label><textarea id="imt" placeholder='{"name":"…","craft":"${craft||"stricken"}","parts":[…]}'></textarea></div>
+    <button class="btn" data-ok>Einspielen</button><button class="btn ghost" data-close>Abbrechen</button>`, el=>{
+    el.querySelector("#imf").onchange = e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ el.querySelector("#imt").value=r.result; }; r.readAsText(f); };
+    el.querySelector("[data-ok]").onclick = ()=>{
+      const txt = el.querySelector("#imt").value.trim(); if(!txt) return toast("Nichts zum Einspielen");
+      let d; try{ d = JSON.parse(txt); }catch(err){ return toast("Datei ist nicht lesbar"); }
+      applyImport(d, craft);
+    };
+  });
+}
+function applyImport(d, craft){
+  if(d && Array.isArray(d.projects)){
+    closeSheet();
+    confirmSheet("Sicherung einspielen?", `Ersetzt die aktuellen ${state.projects.length} Projekte auf diesem Gerät.`, "Einspielen", ()=>{
+      state = normalize({version:1, projects:d.projects, library:d.library, settings:Object.assign({}, state.settings, d.settings||{})});
+      rowCache.clear(); save(); view.name="home"; render(); toast("Sicherung eingespielt"); });
+    return;
+  }
+  const pats = Array.isArray(d) ? d : (d && d.parts ? [d] : (d && Array.isArray(d.patterns) ? d.patterns : null));
+  if(!pats) return toast("Unbekanntes Format");
+  const added = [];
+  for(const t of pats){
+    const problem = checkPattern(t); if(problem){ toast(problem); return; }
+    t.id = t.id || slug(t.name+"-"+(t.designer||""));
+    t.craft = t.craft==="haekeln" ? "haekeln" : t.craft==="stricken" ? "stricken" : (craft||"stricken");
+    const replaced = state.library.some(x=>x.id===t.id);
+    state.library = state.library.filter(x=>x.id!==t.id); state.library.push(t); added.push({t, replaced});
+  }
+  save(); closeSheet();
+  const other = craft && added.some(a=>a.t.craft!==craft);
+  const first = added[0];
+  toast(other ? `Bei ${craftLabel(first.t.craft)} abgelegt` : added.length===1 ? `„${first.t.name}“ ${first.replaced?"aktualisiert":"eingespielt"}` : `${added.length} Anleitungen eingespielt`);
+  render(); if(craft && !other) newProjectSheet();
+}
+function checkPattern(t){
+  if(!t || typeof t!=="object") return "Unbekanntes Format";
+  if(!t.name) return "Der Anleitung fehlt ein Name";
+  if(!Array.isArray(t.parts) || !t.parts.length) return "Die Anleitung enthält keine Teile";
+  const sizes = Math.max(1, Array.isArray(t.sizes)?t.sizes.length:1);
+  for(const pt of t.parts){
+    if(!Array.isArray(pt.sections) || !pt.sections.length) return `„${pt.name||"Teil"}“ enthält keine Abschnitte`;
+    for(const s of pt.sections) if(!Array.isArray(s.rows) || !s.rows.length) return `Abschnitt „${s.name||"ohne Namen"}“ ist leer`;
+    for(let i=0;i<sizes;i++) if(buildRows(pt,i).some(r=>r.stitches<0)) return `Bei „${pt.name||"Teil"}“ fällt die Maschenzahl unter 0`;
+  }
+  return null;
+}
+
+/* ============ Sheets & Toast ============ */
+const modal = document.getElementById("modal");
+function sheet(html, wire){
+  modal.innerHTML = `<div class="scrim"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`;
+  const scrim = modal.querySelector(".scrim");
+  scrim.addEventListener("click", e=>{ if(e.target===scrim) closeSheet(); });
+  modal.querySelectorAll("[data-close]").forEach(b=>b.onclick=closeSheet);
+  if(wire) wire(modal.querySelector(".sheet"));
+  document.body.style.overflow="hidden";
+}
+function closeSheet(){ modal.innerHTML=""; document.body.style.overflow=""; }
+function confirmSheet(title, text, okLabel, onOk){
+  sheet(`<h3>${esc(title)}</h3><p class="sub">${esc(text)}</p><button class="btn warn" data-ok>${esc(okLabel)}</button><button class="btn ghost" data-close>Abbrechen</button>`,
+    el=>{ el.querySelector("[data-ok]").onclick=()=>{ closeSheet(); onOk(); }; });
+}
+function textSheet(title, label, value, onOk, placeholder, okLabel){
+  sheet(`<h3>${esc(title)}</h3><div class="field"><label for="ts">${esc(label)}</label><input id="ts" value="${esc(value)}" placeholder="${esc(placeholder||"")}"></div>
+    <button class="btn" data-ok>${esc(okLabel||"Speichern")}</button><button class="btn ghost" data-close>Abbrechen</button>`, el=>{
+    el.querySelector("[data-ok]").onclick=()=>{ const v = el.querySelector("#ts").value.trim(); if(!v && value) return; closeSheet(); onOk(v); };
+  });
+}
+let toastT;
+function toast(msg, actionLabel, action){
+  const t = document.getElementById("toast");
+  t.innerHTML = esc(msg) + (actionLabel?`<button type="button">${esc(actionLabel)}</button>`:"");
+  t.classList.toggle("act", !!actionLabel);
+  if(actionLabel) t.querySelector("button").onclick = ()=>{ t.classList.remove("on"); action(); };
+  t.classList.add("on"); clearTimeout(toastT);
+  toastT = setTimeout(()=>t.classList.remove("on"), actionLabel?3500:1900);
+}
+
+render();
+</script>
+</body>
+</html>

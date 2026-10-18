@@ -226,6 +226,9 @@ input,textarea,select{font:inherit;color:inherit}
 .opt b{display:block;font-family:Georgia,serif;font-size:17px;font-weight:400}
 .opt span{font-size:13.5px;color:var(--muted)}
 .opt:active{background:#f6f4ef}
+.wk{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:3px 10px;border-radius:999px}
+.wk.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.wk.off{color:var(--muted)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(28px + env(safe-area-inset-bottom,0px));background:var(--ink);color:#fff;padding:11px 18px;border-radius:999px;font-size:14px;z-index:99;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap;max-width:92vw}
 .toast.on{opacity:1}
 .toast.on.act{pointer-events:auto}
@@ -241,7 +244,7 @@ input,textarea,select{font:inherit;color:inherit}
 
 <script>
 "use strict";
-const VERSION = "1.7";
+const VERSION = "1.7.1";
 const KEY = "lena-handarbeit";
 const BACKUP_DAYS = 14;
 const DAY = 86400000;
@@ -313,18 +316,35 @@ function progress(p){ if(p.mode==="free") return null; const t = totalRows(p); r
 function partDone(p, i){ return (p.parts[i].row||0) >= projectRows(p,i).length; }
 
 /* ============ Display wachhalten ============ */
-let wakeLock = null;
+/* iOS erlaubt den Wake Lock nur direkt nach einem Tipp ("transient activation").
+   Deshalb wird er bei jedem Tipp neu angefordert, solange er fehlt – nicht nur beim Rendern. */
+let wakeLock = null, wakePending = false, wakeError = "";
 const wakeSupported = ("wakeLock" in navigator);
-function wakeNeeded(){ return state.settings.wake && view.name==="project" && view.tab==="zaehler"; }
-async function syncWake(){
+function wakeNeeded(){ return state.settings.wake && view.name==="project"; }
+function syncWake(){
   if(!wakeSupported) return;
   if(wakeNeeded()){
-    if(wakeLock) return;
-    try{ wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", ()=>{ wakeLock=null; }); }
-    catch(e){ wakeLock = null; }
-  }else if(wakeLock){ try{ await wakeLock.release(); }catch(e){} wakeLock = null; }
+    if(wakeLock || wakePending) return;
+    wakePending = true;
+    navigator.wakeLock.request("screen").then(l=>{
+      wakeLock = l; wakeError = ""; wakePending = false;
+      l.addEventListener("release", ()=>{ wakeLock = null; updateWakeBadge(); });
+      updateWakeBadge();
+    }).catch(e=>{ wakePending = false; wakeLock = null; wakeError = (e && e.name) || "Fehler"; updateWakeBadge(); });
+  }else if(wakeLock){
+    const l = wakeLock; wakeLock = null; l.release().catch(()=>{}); updateWakeBadge();
+  }
 }
-document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="visible") syncWake(); else wakeLock = null; });
+function wakeText(){
+  if(!state.settings.wake) return "";
+  if(!wakeSupported) return `<span class="wk off">Display geht aus · braucht iOS 18.4 oder neuer</span>`;
+  if(wakeLock) return `<span class="wk on">☀︎ Display bleibt an</span>`;
+  if(wakeError) return `<span class="wk off">Display geht aus · einmal tippen, um es erneut zu versuchen</span>`;
+  return `<span class="wk off">Tippe einmal, damit das Display anbleibt</span>`;
+}
+function updateWakeBadge(){ const el = document.getElementById("wakebadge"); if(el) el.innerHTML = wakeText(); }
+["touchend","click"].forEach(t=>document.addEventListener(t, ()=>{ if(!wakeLock) syncWake(); }, {capture:true, passive:true}));
+document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState==="visible") syncWake(); else { wakeLock = null; updateWakeBadge(); } });
 
 /* ============ Icons ============ */
 const ICON_KNIT = `<svg width="60" height="60" viewBox="0 0 64 64" aria-hidden="true">
@@ -572,7 +592,8 @@ function counterBody(p){
     <button class="plus" data-plus><span class="sign">+</span><span class="lbl">${U} ${done+1} fertig</span></button>
     <div class="undo"><button data-minus>− Zurück</button><button data-jump>Springen</button></div>
     ${extras}
-    <div class="total">${p.parts.length>1?esc(part.name)+" · ":""}${done} von ${rows.length} ${Us} gezählt</div>`;
+    <div class="total">${p.parts.length>1?esc(part.name)+" · ":""}${done} von ${rows.length} ${Us} gezählt</div>
+    <div class="total" id="wakebadge">${wakeText()}</div>`;
 }
 function auxAndNote(part){
   const aux = (part.aux||[]).map((a,i)=>`<div class="aux"><button class="an" data-auxedit="${i}">${esc(a.name)}</button>
@@ -727,7 +748,7 @@ function freeBody(p){
       <div class="chead"><span class="cname">${esc(c.name)}</span><button class="icon-btn" data-cedit="${i}" aria-label="Zähler bearbeiten"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 20h4L20 8l-4-4L4 16v4z"/></svg></button></div>
       <div class="cbody"><button class="rnd" data-cminus="${i}" aria-label="Minus">−</button><span class="val">${c.value||0}</span><button class="rnd big" data-cplus="${i}" aria-label="Plus">+</button></div>
       ${c.every>0?`<div class="crep"><span>Wiederholung alle ${c.every}</span><b>${Math.floor((c.value||0)/c.every)}${c.repTotal?" / "+c.repTotal:""}</b></div>`:""}
-    </div>`).join("") + `<button class="btn ghost" data-addc>Weiteren Zähler hinzufügen</button>`;
+    </div>`).join("") + `<button class="btn ghost" data-addc>Weiteren Zähler hinzufügen</button><div class="total" id="wakebadge">${wakeText()}</div>`;
 }
 function wireFree(p){
   const touch = ()=>{ p.updated=Date.now(); save(); renderProject(); };
@@ -884,8 +905,8 @@ function createFree(name){
 function renderSettings(){
   app.innerHTML = `${bar("Einstellungen","home")}
   <div class="wrap">
-    <div class="note"><h3>Beim Zählen</h3><p>Hält das Display an, solange der Zähler offen ist. Braucht iOS 16.4 oder neuer.${wakeSupported?"":" Dieses Gerät oder diese Ansicht unterstützt es nicht."}</p></div>
-    <button class="btn ${state.settings.wake?"":"ghost"}" data-wake>${state.settings.wake?"Display bleibt an":"Display geht normal aus"}</button>
+    <div class="note"><h3>Display anlassen</h3><p>Hält das Display an, solange ein Projekt offen ist. Funktioniert in der App auf dem Home-Bildschirm ab iOS 18.4. Im Energiesparmodus kann iOS es trotzdem ausschalten.${wakeSupported?"":" Dieses Gerät unterstützt es leider nicht."}</p></div>
+    <button class="btn ${state.settings.wake?"":"ghost"}" data-wake>${state.settings.wake?"An · Display bleibt im Projekt an":"Aus · Display geht normal aus"}</button>
     <div class="note" style="margin-top:22px"><h3>Sicherung</h3><p>Projekte und Anleitungen liegen nur auf diesem Gerät. ${state.settings.lastBackup?"Zuletzt gesichert am "+fmtDate(state.settings.lastBackup)+".":"Noch nie gesichert."} Am besten in der Dateien-App oder per Nachricht an dich selbst ablegen.</p></div>
     <button class="btn" data-export>Jetzt sichern</button>
     <button class="btn ghost" data-import>Sicherung einspielen</button>

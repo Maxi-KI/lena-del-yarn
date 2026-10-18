@@ -162,6 +162,28 @@ input,textarea,select{font:inherit;color:inherit}
 .howto[open] summary::before{content:"⌄ ";}
 .howto p{margin:8px 0 0}
 .wmiss{font-size:13.5px;color:#9c3226;margin:0 0 12px}
+/* Feier */
+.party{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:radial-gradient(120% 90% at 50% 30%, #3b2f8f 0%, #1c1640 70%);animation:fadein .35s ease both}
+.party canvas{position:absolute;inset:0;width:100%;height:100%}
+.pcard2{position:relative;width:100%;max-width:360px;background:var(--card);border-radius:28px;padding:26px 22px 20px;text-align:center;
+  box-shadow:0 24px 60px rgba(0,0,0,.35);animation:popin .6s cubic-bezier(.2,1.5,.4,1) .15s both}
+.mascot{width:108px;height:108px;margin:-74px auto 8px;border-radius:28px;overflow:hidden;box-shadow:0 10px 26px rgba(108,92,231,.45);
+  animation:hop 1.1s ease-in-out .7s infinite}
+.mascot svg{display:block;width:108px;height:108px}
+.bubble{position:absolute;top:-58px;left:calc(50% + 50px);background:#FFC440;color:#2A2038;font-weight:800;font-size:15px;padding:6px 12px;
+  border-radius:14px 14px 14px 4px;transform:rotate(8deg);animation:popin .5s cubic-bezier(.2,1.6,.4,1) .9s both}
+.pcard2 h3{font-size:27px;line-height:1.15;margin:4px 0 8px}
+.pcard2 .msg{margin:0 0 16px;color:#4a4456;font-size:15.5px;line-height:1.5}
+.pstats{display:flex;gap:8px;margin-bottom:16px}
+.pstats div{flex:1;background:var(--accent-soft);border-radius:14px;padding:10px 4px}
+.pstats b{display:block;font-size:19px;color:var(--accent);font-variant-numeric:tabular-nums}
+.pstats span{font-size:11.5px;color:var(--muted)}
+.ptip{font-size:12.5px;color:var(--muted);margin-top:12px}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes popin{from{opacity:0;transform:scale(.6) translateY(20px)}to{opacity:1;transform:none}}
+@keyframes hop{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-14px) rotate(-6deg)}55%{transform:translateY(0) rotate(4deg)}70%{transform:translateY(-5px)}}
+@media (prefers-reduced-motion:reduce){.mascot,.bubble,.pcard2,.party{animation:none!important}}
 /* Freie Zähler */
 .counter{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
 .counter .chead{display:flex;align-items:center;gap:8px;margin-bottom:10px}
@@ -244,7 +266,7 @@ input,textarea,select{font:inherit;color:inherit}
 
 <script>
 "use strict";
-const VERSION = "1.7.1";
+const VERSION = "1.8";
 const KEY = "lena-handarbeit";
 const BACKUP_DAYS = 14;
 const DAY = 86400000;
@@ -551,6 +573,7 @@ function counterBody(p){
         <p>${allDone ? `${totalRows(p)} ${Us} ${daysText(p)}. Jetzt nur noch die Fäden vernähen.` : `Weiter mit „${esc(p.parts[next].name)}“.`}</p>
         ${!allDone?`<button class="btn" data-nextpart="${next}">Zu „${esc(p.parts[next].name)}“</button>`:""}
         ${allDone && p.status!=="fertig"?`<button class="btn" data-complete>Projekt abschließen</button>`:""}
+        ${allDone && p.status==="fertig"?`<button class="btn ghost" data-replay>Nochmal feiern 🎉</button>`:""}
       </div>
       <div class="undo"><button data-minus>− Zurück</button><button data-jump>Springen</button></div>${extras}`;
   }
@@ -605,7 +628,7 @@ function auxAndNote(part){
 let lastPlus = 0;
 function wireCounter(p){
   const idx = Math.min(view.partIdx, p.parts.length-1), part = p.parts[idx], rows = projectRows(p, idx), U = unitOf(p);
-  const touch = ()=>{ p.updated = Date.now(); save(); renderProject(); };
+  const touch = ()=>{ const fin = syncStatus(p); p.updated = Date.now(); save(); renderProject(); if(fin) celebrate(p); };
   wirePartSel();
   const plus = app.querySelector("[data-plus]");
   if(plus) plus.onclick = ()=>{
@@ -619,7 +642,8 @@ function wireCounter(p){
   app.querySelectorAll("[data-minus]").forEach(b=>b.onclick = ()=>{ part.row = Math.max((part.row||0)-1, 0); touch(); });
   app.querySelectorAll("[data-jump]").forEach(b=>b.onclick = ()=>jumpSheet(p, idx));
   const np = app.querySelector("[data-nextpart]"); if(np) np.onclick = ()=>{ view.partIdx = +np.dataset.nextpart; renderProject(); };
-  const comp = app.querySelector("[data-complete]"); if(comp) comp.onclick = ()=>{ p.status="fertig"; p.finished=Date.now(); touch(); };
+  const comp = app.querySelector("[data-complete]"); if(comp) comp.onclick = ()=>touch();
+  const rep = app.querySelector("[data-replay]"); if(rep) rep.onclick = ()=>celebrate(p);
   wireExtras(p, part, touch);
 }
 function wireExtras(p, part, touch){
@@ -696,7 +720,8 @@ function jumpSheet(p, idx){
     <p class="sub" style="margin:18px 0 8px">Oder an den Anfang eines Abschnitts</p>
     ${secs.map(s=>`<button class="opt" data-sec="${s.start}"><b>${esc(s.name)}</b><span>ab ${U} ${s.start+1}</span></button>`).join("")}
     <button class="btn ghost" data-close>Abbrechen</button>`, el=>{
-    const set = v=>{ part.row = Math.max(0, Math.min(rows.length, v)); p.updated=Date.now(); save(); closeSheet(); renderProject(); toast(`Weiter bei ${U} ${Math.min(part.row+1, rows.length)}`); };
+    const set = v=>{ part.row = Math.max(0, Math.min(rows.length, v)); const fin = syncStatus(p); p.updated=Date.now(); save(); closeSheet(); renderProject();
+      if(fin) celebrate(p); else toast(`Weiter bei ${U} ${Math.min(part.row+1, rows.length)}`); };
     el.querySelector("[data-ok]").onclick = ()=>set(parseInt(el.querySelector("#jr").value||"0",10));
     el.querySelectorAll("[data-sec]").forEach(b=>b.onclick=()=>set(+b.dataset.sec));
     if(!hasChanges) return;
@@ -853,13 +878,102 @@ function projectMenu(p){
     <button class="btn ghost danger" data-delete>Projekt löschen</button>
     <button class="btn ghost" data-close>Schließen</button>`, el=>{
     el.querySelector("[data-rename]").onclick=()=>{ closeSheet(); textSheet("Umbenennen","Name",p.name,v=>{ p.name=v; p.updated=Date.now(); save(); renderProject(); }); };
-    el.querySelector("[data-status]").onclick=()=>{ const f = p.status!=="fertig"; p.status = f?"fertig":"laufend"; p.finished = f?Date.now():null; p.updated=Date.now(); save(); closeSheet(); renderProject(); };
+    el.querySelector("[data-status]").onclick=()=>{ const f = p.status!=="fertig"; p.status = f?"fertig":"laufend"; p.finished = f?Date.now():null; p.updated=Date.now(); save(); closeSheet(); renderProject(); if(f) celebrate(p); };
     el.querySelector("[data-reset]").onclick=()=>{ closeSheet(); confirmSheet("Zähler zurücksetzen?", "Alle Zählerstände dieses Projekts gehen auf null.", "Zurücksetzen", ()=>{
       p.parts.forEach(pt=>{ pt.row=0; (pt.aux||[]).forEach(a=>a.value=0); }); (p.counters||[]).forEach(c=>c.value=0);
       p.status="laufend"; p.finished=null; p.updated=Date.now(); save(); toast("Zurückgesetzt"); renderProject(); }); };
     el.querySelector("[data-delete]").onclick=()=>{ closeSheet(); confirmSheet("Projekt löschen?", "Der Zählerstand geht dabei verloren. Das lässt sich nicht rückgängig machen.", "Löschen", ()=>{
       state.projects = state.projects.filter(x=>x.id!==p.id); save(); view.name="list"; render(); toast("Gelöscht"); }); };
   });
+}
+
+/* ============ Abschluss-Feier ============ */
+function syncStatus(p){
+  if(p.mode==="free") return false;
+  const all = p.parts.every((_,i)=>partDone(p,i));
+  if(all && p.status!=="fertig"){ p.status="fertig"; p.finished=Date.now(); return true; }
+  if(!all && p.status==="fertig"){ p.status="laufend"; p.finished=null; }
+  return false;
+}
+function celebrate(p){
+  const haek = p.craft==="haekeln";
+  const heads = [
+    "Geschafft, Lena!",
+    "Masche für Masche – fertig!",
+    "Das Knäuel ist so stolz auf dich",
+    haek ? "Fertig gehäkelt, fertig gestrahlt" : "Fertig gestrickt, fertig gestrahlt",
+    "Lena Del Yarn hat geliefert"
+  ];
+  const lines = [
+    "Jede einzelne Reihe war es wert.",
+    "Jetzt nur noch die Fäden vernähen – und dann ganz viel damit angeben.",
+    "Ein Knäuel weniger, ein Lieblingsstück mehr.",
+    "Das Knäuel wackelt vor Freude. Du darfst das auch.",
+    "Tee, Sofa, Stolz. In genau dieser Reihenfolge."
+  ];
+  const pick = a => a[Math.floor(Math.random()*a.length)];
+  const total = p.mode==="free" ? (p.counters||[]).reduce((s,c)=>s+(c.value||0),0) : totalRows(p);
+  const days = Math.max(1, Math.floor(((p.finished||Date.now())-p.created)/DAY)+1);
+  const maxSt = p.mode==="free" ? null : Math.max(...p.parts.map((_,i)=>Math.max(castOnOf(p.parts[i],p.sizeIdx||0),...projectRows(p,i).map(r=>r.stitches))));
+  const tt = document.getElementById("toast"); if(tt) tt.classList.remove("on");
+  const box = document.createElement("div");
+  box.className = "party"; box.setAttribute("role","dialog"); box.setAttribute("aria-label","Projekt fertig");
+  box.innerHTML = `<canvas></canvas>
+    <div class="pcard2">
+      <div style="position:relative"><div class="mascot">${LOGO}</div><span class="bubble">Juhu!</span></div>
+      <h3>${esc(pick(heads))}</h3>
+      <p class="msg"><b>${esc(p.name)}</b> ist fertig. ${esc(pick(lines))}</p>
+      <div class="pstats">
+        <div><b>${total}</b><span>${p.mode==="free"?"gezählt":unitsOf(p)}</span></div>
+        <div><b>${days}</b><span>${days===1?"Tag":"Tage"}</span></div>
+        ${maxSt?`<div><b>${maxSt}</b><span>Maschen max.</span></div>`:""}
+      </div>
+      <button class="btn" data-pclose>Juhu, weiter!</button>
+      <p class="ptip">Tipp irgendwo hin für noch mehr Feuerwerk</p>
+    </div>`;
+  document.body.appendChild(box);
+  const fw = fireworks(box.querySelector("canvas"));
+  box.addEventListener("click", e=>{ if(e.target.tagName==="CANVAS" || e.target===box) fw.burst(e.clientX, e.clientY); });
+  box.querySelector("[data-pclose]").onclick = ()=>{ fw.stop(); box.remove(); };
+}
+function fireworks(cv){
+  const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const ctx = cv.getContext("2d"), dpr = Math.min(2, window.devicePixelRatio||1);
+  const W = ()=>cv.clientWidth, H = ()=>cv.clientHeight;
+  const size = ()=>{ cv.width = W()*dpr; cv.height = H()*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); };
+  size(); window.addEventListener("resize", size);
+  const COLS = ["#FFC440","#FF8A5B","#FFB48F","#B9AEFF","#FFFFFF","#7EE0C3","#FF6B8B"];
+  const rockets = [], sparks = [];
+  let running = true, last = performance.now(), auto = 0, launched = 0;
+  function heart(x,y,s,c,a){ ctx.save(); ctx.globalAlpha=a; ctx.fillStyle=c; ctx.translate(x,y); ctx.scale(s,s); ctx.beginPath();
+    ctx.moveTo(0,3); ctx.bezierCurveTo(-6,-2,-3,-7,0,-4); ctx.bezierCurveTo(3,-7,6,-2,0,3); ctx.fill(); ctx.restore(); }
+  function burst(x,y){
+    const c1 = COLS[Math.floor(Math.random()*COLS.length)], c2 = COLS[Math.floor(Math.random()*COLS.length)];
+    const n = 70 + Math.floor(Math.random()*30), sp = 3.2 + Math.random()*2;
+    for(let i=0;i<n;i++){ const a = i/n*Math.PI*2 + Math.random()*0.15, v = sp*(0.65+Math.random()*0.5);
+      sparks.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:1,decay:0.009+Math.random()*0.008,c:i%3?c1:c2,r:2.4+Math.random()*2.2,h:Math.random()<0.14}); }
+  }
+  function launch(){ const x = W()*(0.15+Math.random()*0.7);
+    rockets.push({x,y:H()+10,vx:(Math.random()-0.5)*0.8,vy:-(8.5+Math.random()*3),ty:H()*(0.07+Math.random()*0.17)}); launched++; }
+  const opener = ()=>{ burst(W()*0.22,H()*0.14); setTimeout(()=>burst(W()*0.8,H()*0.11),220); setTimeout(()=>burst(W()*0.5,H()*0.86),450); };
+  if(reduce){ for(let i=0;i<4;i++) burst(W()*(0.2+0.2*i), H()*(0.2+0.1*(i%2))); } else setTimeout(opener, 250);
+  function frame(t){
+    if(!running) return;
+    const dt = Math.min(2.5,(t-last)/16.7); last = t;
+    ctx.globalCompositeOperation = "destination-out"; ctx.fillStyle = "rgba(0,0,0,0.16)"; ctx.fillRect(0,0,W(),H());
+    ctx.globalCompositeOperation = "lighter";
+    auto -= dt; if(!reduce && launched<16 && auto<=0){ launch(); auto = 18+Math.random()*24; }
+    for(let i=rockets.length-1;i>=0;i--){ const r = rockets[i]; r.x+=r.vx*dt; r.y+=r.vy*dt; r.vy+=0.12*dt;
+      ctx.fillStyle="#FFE6B0"; ctx.beginPath(); ctx.arc(r.x,r.y,2.2,0,7); ctx.fill();
+      if(r.y<=r.ty || r.vy>=0){ burst(r.x,r.y); rockets.splice(i,1); } }
+    for(let i=sparks.length-1;i>=0;i--){ const s = sparks[i]; s.x+=s.vx*dt; s.y+=s.vy*dt; s.vy+=0.045*dt; s.vx*=0.985; s.vy*=0.985; s.life-=s.decay*dt;
+      if(s.life<=0){ sparks.splice(i,1); continue; }
+      if(s.h) heart(s.x,s.y,0.9+s.r*0.25,s.c,s.life); else { ctx.globalAlpha=s.life; ctx.fillStyle=s.c; ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,7); ctx.fill(); } }
+    ctx.globalAlpha=1;
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  return {burst, stop(){ running=false; window.removeEventListener("resize", size); }};
 }
 
 /* ============ Neues Projekt ============ */

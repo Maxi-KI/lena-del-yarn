@@ -137,6 +137,14 @@ input,textarea,select{font:inherit;color:inherit}
 @keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
 @keyframes burst{0%{opacity:.9;transform:rotate(var(--a)) translateY(0)}100%{opacity:0;transform:rotate(var(--a)) translateY(-46px)}}
 
+.where{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 14px 4px;margin-bottom:16px}
+.where>b{font-family:Georgia,serif;font-weight:400;font-size:17px;display:block;margin-bottom:4px}
+.where>p{margin:0 0 12px;font-size:13.5px;color:var(--muted)}
+.chk{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;color:#454b47;margin:-2px 0 12px}
+.chk input{margin-top:3px;accent-color:var(--accent);width:18px;height:18px;flex:none}
+.opt.hit{border-color:var(--accent);background:var(--accent-soft)}
+.wsub{font-size:13.5px;color:var(--muted);margin:0 0 8px}
+.wmiss{font-size:13.5px;color:#9c3226;margin:0 0 12px}
 /* Freie Zähler */
 .counter{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
 .counter .chead{display:flex;align-items:center;gap:8px;margin-bottom:10px}
@@ -196,7 +204,7 @@ input,textarea,select{font:inherit;color:inherit}
 
 <script>
 "use strict";
-const VERSION = "1.5";
+const VERSION = "1.6";
 const KEY = "lena-handarbeit";
 const BACKUP_DAYS = 14;
 const DAY = 86400000;
@@ -568,19 +576,75 @@ function auxSheet(part, i, touch){
     const d = el.querySelector("[data-del]"); if(d) d.onclick=()=>{ part.aux.splice(i,1); closeSheet(); touch(); };
   });
 }
+/* Sucht alle Stellen, an denen gerade "maschen" Maschen auf der Nadel liegen,
+   und rechnet die "seit" Reihen seit der letzten Maschenänderung dazu. */
+function locate(p, idx, maschen, seit){
+  const part = p.parts[idx], rows = projectRows(p, idx);
+  const before = j => j===0 ? castOnOf(part, p.sizeIdx||0) : rows[j-1].stitches;
+  const out = [];
+  let j = 0;
+  while(j <= rows.length){
+    if(before(j)!==maschen){ j++; continue; }
+    const start = j;
+    while(j+1 <= rows.length && before(j+1)===maschen) j++;
+    const end = j;                      // letzte Position mit dieser Maschenzahl
+    const pos = start + seit;
+    if(pos <= end) out.push({pos, section: rows[Math.min(pos, rows.length-1)].sectionName, span:end-start});
+    j++;
+  }
+  return out;
+}
 function jumpSheet(p, idx){
-  const part = p.parts[idx], rows = projectRows(p, idx), U = unitOf(p);
+  const part = p.parts[idx], rows = projectRows(p, idx), U = unitOf(p), Us = unitsOf(p);
   const secs = []; rows.forEach((r,i)=>{ if(!secs.length || secs[secs.length-1].idx!==r.sectionIdx) secs.push({idx:r.sectionIdx, name:r.sectionName, start:i}); });
+  const hasChanges = rows.some(r=>r.delta);
+  const knit = p.craft!=="haekeln";
+  const curSt = (part.row||0)>0 ? rows[Math.min(part.row,rows.length)-1].stitches : castOnOf(part, p.sizeIdx||0);
   sheet(`<h3>Springen</h3>
-    <p class="sub">Gezählt: ${part.row||0} von ${rows.length} ${unitsOf(p)}</p>
-    <div class="field"><label for="jr">Fertig gestrickte ${unitsOf(p)}</label><input id="jr" type="number" inputmode="numeric" min="0" max="${rows.length}" value="${part.row||0}"></div>
-    <button class="btn" data-ok>Übernehmen</button>
+    <p class="sub">Gezählt: ${part.row||0} von ${rows.length} ${Us}</p>
+    ${hasChanges?`<div class="where">
+      <b>Wo bin ich?</b>
+      <p>Zähl die Maschen auf der Nadel und die ${Us} seit der letzten Zu- oder Abnahme – die App findet die Stelle.</p>
+      <div class="two">
+        <div class="field"><label for="wm">Maschen auf der Nadel</label><input id="wm" type="number" inputmode="numeric" min="0" placeholder="${curSt}"></div>
+        <div class="field"><label for="ws">${Us} seit Änderung</label><input id="ws" type="number" inputmode="numeric" min="0" placeholder="0"></div>
+      </div>
+      ${knit?`<label class="chk"><input type="checkbox" id="wr"> Ich habe Rippen gezählt (kraus rechts: 1 Rippe = 2 Reihen)</label>`:""}
+      <div id="wres"></div>
+    </div>`:""}
+    <div class="field"><label for="jr">Oder direkt: fertige ${Us}</label><input id="jr" type="number" inputmode="numeric" min="0" max="${rows.length}" value="${part.row||0}"></div>
+    <button class="btn ghost" data-ok>Übernehmen</button>
     <p class="sub" style="margin:18px 0 8px">Oder an den Anfang eines Abschnitts</p>
     ${secs.map(s=>`<button class="opt" data-sec="${s.start}"><b>${esc(s.name)}</b><span>ab ${U} ${s.start+1}</span></button>`).join("")}
     <button class="btn ghost" data-close>Abbrechen</button>`, el=>{
-    const set = v=>{ part.row = Math.max(0, Math.min(rows.length, v)); p.updated=Date.now(); save(); closeSheet(); renderProject(); };
+    const set = v=>{ part.row = Math.max(0, Math.min(rows.length, v)); p.updated=Date.now(); save(); closeSheet(); renderProject(); toast(`Weiter bei ${U} ${Math.min(part.row+1, rows.length)}`); };
     el.querySelector("[data-ok]").onclick = ()=>set(parseInt(el.querySelector("#jr").value||"0",10));
     el.querySelectorAll("[data-sec]").forEach(b=>b.onclick=()=>set(+b.dataset.sec));
+    if(!hasChanges) return;
+    const res = el.querySelector("#wres");
+    const calc = ()=>{
+      const rb = el.querySelector("#wr");
+      el.querySelector('label[for="ws"]').textContent = rb && rb.checked ? "Rippen seit Änderung" : `${Us} seit Änderung`;
+      const mv = el.querySelector("#wm").value;
+      if(mv===""){ res.innerHTML=""; return; }
+      const m = parseInt(mv,10);
+      let s = parseInt(el.querySelector("#ws").value||"0",10)||0;
+      const rib = el.querySelector("#wr");
+      el.querySelector('label[for="ws"]').textContent = rib && rib.checked ? "Rippen seit Änderung" : `${Us} seit Änderung`;
+      if(rib && rib.checked) s *= 2;
+      const hits = locate(p, idx, m, Math.max(0,s));
+      if(!hits.length){
+        const any = locate(p, idx, m, 0);
+        res.innerHTML = `<p class="wmiss">${any.length
+          ? `Mit ${m} Maschen hat diese Anleitung höchstens ${Math.max(...any.map(a=>a.span))} ${Us} am Stück. Zähl die ${Us} seit der letzten Änderung bitte noch einmal.`
+          : `${m} Maschen kommen in dieser Größe nicht vor. Vielleicht verzählt – oder eine andere Größe?`}</p>`;
+        return;
+      }
+      res.innerHTML = (hits.length>1?`<p class="wsub">Diese Maschenzahl gibt es zweimal. Wird der Schal gerade breiter oder schmaler?</p>`:"") +
+        hits.map(h=>`<button class="opt hit" data-hit="${h.pos}"><b>${h.pos>=rows.length?"Fertig":U+" "+(h.pos+1)+" als Nächstes"}</b><span>${esc(h.section)} · ${h.pos} ${Us} fertig</span></button>`).join("");
+      res.querySelectorAll("[data-hit]").forEach(b=>b.onclick=()=>set(+b.dataset.hit));
+    };
+    ["#wm","#ws","#wr"].forEach(s=>{ const f=el.querySelector(s); if(f){ f.addEventListener("input",calc); f.addEventListener("change",calc); } });
   });
 }
 

@@ -98,7 +98,18 @@ input,textarea,select{font:inherit;color:inherit}
 .blockbar i{flex:1;height:5px;border-radius:3px;background:var(--line)}
 .blockbar i.on{background:var(--accent);opacity:.45}
 .blockbar i.cur{background:var(--accent)}
-.blockbar i.chg{outline:1.5px solid var(--accent);outline-offset:1px}
+.chips{display:flex;gap:5px;margin-top:14px}
+.chip{flex:1;min-width:0;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;position:relative;
+  font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;border:1.5px solid var(--line);color:var(--muted);background:var(--card)}
+.chip.done{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.chip.now{background:var(--accent);border-color:var(--accent);color:#fff;transform:scale(1.08);box-shadow:0 3px 8px rgba(42,32,56,.18)}
+.chip i{position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);font-style:normal;font-size:9.5px;font-weight:700;line-height:1;
+  padding:2px 4px;border-radius:6px;background:var(--card);color:var(--accent);border:1px solid var(--accent)}
+.chip.now i{background:#fff}
+.chiplegend{display:flex;justify-content:space-between;margin-top:12px;font-size:12px;color:var(--muted)}
+.lastdone{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted);margin:0 0 8px}
+.lastdone .ck{width:20px;height:20px}
+.eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase;margin-bottom:2px}
 .nexthint{font-size:13.5px;color:var(--accent);margin-top:10px;font-weight:500}
 .stats{display:flex;gap:10px;margin:12px 0}
 .stat{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 8px;text-align:center}
@@ -166,11 +177,31 @@ input,textarea,select{font:inherit;color:inherit}
 .sec>summary::-webkit-details-marker{display:none}
 .sec>summary span:last-child{color:var(--muted);font-size:13px;white-space:nowrap}
 .sec .rows{border-top:1px solid var(--line)}
-.rline{display:flex;gap:12px;padding:11px 16px;font-size:14.5px;border-bottom:1px solid #efece4}
+.rline{display:flex;gap:10px;align-items:flex-start;padding:11px 16px 11px 12px;font-size:14.5px;border-bottom:1px solid #efece4}
 .rline:last-child{border-bottom:0}
-.rline .n{color:var(--muted);min-width:70px;white-space:nowrap;font-variant-numeric:tabular-nums}
-.rline.now{background:var(--accent-soft)}
+.rline .n{color:var(--muted);min-width:66px;white-space:nowrap;font-variant-numeric:tabular-nums;display:flex;flex-direction:column;align-items:flex-start;gap:5px}
 .rline em{color:var(--accent);font-style:normal;font-weight:600}
+.rline.done>span:last-child{color:var(--muted)}
+.rline.done em{opacity:.6}
+.rline.now{background:var(--accent-soft);box-shadow:inset 4px 0 0 var(--accent)}
+.rline.now .n{color:var(--accent);font-weight:600}
+.rline.now>span:last-child{font-weight:500}
+.rline.info{padding-top:12px;padding-bottom:12px}
+.mk{flex:none;width:22px;height:22px;margin-top:-1px;display:flex;align-items:center;justify-content:center}
+.ck{width:22px;height:22px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center}
+.ck svg{display:block}
+.dotnow{width:22px;height:22px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center}
+.dotnow::after{content:"";width:8px;height:8px;border-radius:50%;background:#fff}
+.ring{width:18px;height:18px;border-radius:50%;border:2px solid var(--line)}
+.nowpill{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;color:#fff;background:var(--accent);border-radius:999px;padding:2px 8px}
+.sec.secdone>summary span:first-child{color:var(--muted)}
+.sec>summary .st{display:flex;align-items:center;gap:6px}
+.sec>summary .st.ok{color:var(--accent);font-weight:600}
+.sec>summary .st.run{color:var(--accent)}
+.durch{padding:12px 16px 12px 12px;border-bottom:1px solid #efece4;display:flex;gap:10px;align-items:center}
+.durch .tx{flex:1;font-size:13.5px;color:var(--muted)}
+.durch .tx b{color:var(--ink);font-weight:600}
+.durch .track{margin-top:7px}
 .note{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
 .note h3{font-size:16.5px;margin-bottom:5px}
 .note p{margin:0 0 4px;font-size:14.5px;color:#454b47}
@@ -210,7 +241,7 @@ input,textarea,select{font:inherit;color:inherit}
 
 <script>
 "use strict";
-const VERSION = "1.6.1";
+const VERSION = "1.7";
 const KEY = "lena-handarbeit";
 const BACKUP_DAYS = 14;
 const DAY = 86400000;
@@ -478,6 +509,12 @@ function partSel(p, idx, mark){
 function wirePartSel(){ app.querySelectorAll("[data-part]").forEach(b=>b.onclick=()=>{ view.partIdx=+b.dataset.part; renderProject(); }); }
 
 /* ---- Zähler nach Anleitung ---- */
+const CK = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`;
+function mark(st){
+  return `<span class="mk">${st==="done"?`<span class="ck">${CK}</span>`:st==="now"?`<span class="dotnow"></span>`:`<span class="ring"></span>`}</span>`;
+}
+function stOf(i, cur){ return i<cur ? "done" : i===cur ? "now" : "todo"; }
+
 function changeWord(d){ return (d>0?"Zunahme":"Abnahme") + ` (${d>0?"+":""}${d} M)`; }
 function counterBody(p){
   const idx = Math.min(view.partIdx, p.parts.length-1), part = p.parts[idx], rows = projectRows(p, idx);
@@ -502,8 +539,16 @@ function counterBody(p){
   const stitchesNow = done>0 ? rows[done-1].stitches : castOnOf(part, p.sizeIdx||0);
   const blockStart = done - (cur.rowInBlock-1);
   const inBlock = cur.blockLen>1 && cur.repeatTotal>1;
-  const dots = inBlock ? `<div class="blockbar">${Array.from({length:cur.blockLen},(_,i)=>{
-    const r = rows[blockStart+i]; return `<i class="${i+1<cur.rowInBlock?"on":(i+1===cur.rowInBlock?"cur":"")}${r&&r.delta?" chg":""}"></i>`; }).join("")}</div>` : "";
+  let dots = "";
+  if(inBlock && cur.blockLen<=12){
+    dots = `<div class="chips">${Array.from({length:cur.blockLen},(_,i)=>{
+      const r = rows[blockStart+i], st = i+1<cur.rowInBlock?"done":(i+1===cur.rowInBlock?"now":"todo");
+      return `<span class="chip ${st}" aria-label="${U} ${i+1}${st==="done"?" erledigt":st==="now"?" jetzt":" offen"}">${st==="done"?CK.replace('width="13" height="13"','width="15" height="15"'):i+1}${r&&r.delta?`<i>${r.delta>0?"+":""}${r.delta}</i>`:""}</span>`; }).join("")}</div>
+`;
+  }else if(inBlock){
+    dots = `<div class="blockbar">${Array.from({length:cur.blockLen},(_,i)=>`<i class="${i+1<cur.rowInBlock?"on":(i+1===cur.rowInBlock?"cur":"")}"></i>`).join("")}</div>`;
+  }
+  const lastDone = done>0 ? `<div class="lastdone"><span class="ck">${CK}</span><span>${U} ${done} ist fertig</span></div>` : "";
   let hint = "";
   if(!cur.delta){
     const k = rows.findIndex((r,i)=>i>done && r.delta);
@@ -512,7 +557,9 @@ function counterBody(p){
   const top = inBlock ? `${U} ${cur.rowInBlock} von ${cur.blockLen}` : `${U} ${done+1}`;
   return `${partSel(p, idx, true)}
     <div class="section-name"><span>${esc(cur.sectionName)}</span><span>${inBlock?`${U} ${done+1} von ${rows.length}`:`von ${rows.length} ${Us}`}</span></div>
+    ${lastDone}
     <div class="instr ${cur.delta?"change":""}">
+      <div class="eyebrow">Jetzt ${p.craft==="haekeln"?"häkeln":"stricken"}</div>
       <div class="top"><span class="rw">${top}</span><span class="side">${cur.delta?`<span class="badge">${cur.delta>0?"+":""}${cur.delta} M</span>`:""}${esc(cur.side)}</span></div>
       <p>${esc(cur.text)}</p>${dots}
       ${hint?`<div class="nexthint">${hint}</div>`:""}
@@ -725,19 +772,29 @@ function patternBody(p){
     <div class="note"><h3>Anschlag</h3><p>${castOnOf(part, p.sizeIdx||0) ? castOnOf(part, p.sizeIdx||0)+" Maschen" : "Ohne Anschlag"}${p.meta&&p.meta.needle?" · "+esc(p.meta.needle):""}</p></div>
     ${secs.map(s=>{
       const here = cur<rows.length && cur>=s.start && cur<=s.end;
+      const secSt = cur>s.end ? "done" : here ? "now" : "todo";
       const def = part.sections[s.idx];
       let body;
       if(s.reps>1 && s.blockLen===1){
-        const r = rows[s.start];
-        body = `<div class="rline ${here?"now":""}"><span class="n">${range(s.start,s.end)}</span><span>${esc(r.text)}${deltaTag(r,true)}</span></div>`;
+        const r = rows[s.start], k = here ? cur-s.start : 0;
+        body = `<div class="rline ${secSt}">${mark(secSt)}<span class="n">${range(s.start,s.end)}${here?`<span class="nowpill">${k+1}/${s.reps}</span>`:""}</span><span>${esc(r.text)}${deltaTag(r,true)}</span></div>`;
       }else if(s.reps>1){
-        body = (here?`<div class="rline"><span class="n"></span><span style="color:var(--muted)">Aktuell Durchgang ${curRow.repeat} von ${s.reps}</span></div>`:"") +
+        const doneReps = secSt==="done" ? s.reps : here ? curRow.repeat-1 : 0;
+        body = `<div class="durch">${mark(secSt==="done"?"done":"todo").replace('ring"','ring" style="opacity:0"')}<div class="tx">${secSt==="done"
+              ? `Alle <b>${s.reps}</b> Durchgänge fertig`
+              : here ? `Durchgang <b>${curRow.repeat} von ${s.reps}</b> · ${doneReps} fertig` : `${s.reps} Durchgänge à ${s.blockLen} ${Us}`}
+            <div class="track"><i style="width:${Math.round(doneReps/s.reps*100)}%"></i></div></div></div>` +
           def.rows.map((_,ri)=>{ const r = rows[s.start+ri];
-            return `<div class="rline ${here&&curRow.rowInBlock===ri+1?"now":""}"><span class="n">${ri+1}. ${esc(r.side)}</span><span>${esc(r.text)}${deltaTag(r,true)}</span></div>`; }).join("");
+            const st = secSt!=="now" ? secSt : (ri+1<curRow.rowInBlock?"done":ri+1===curRow.rowInBlock?"now":"todo");
+            return `<div class="rline ${st}">${mark(st)}<span class="n">${ri+1}. ${esc(r.side)}${st==="now"?`<span class="nowpill">Jetzt</span>`:""}</span><span>${esc(r.text)}${deltaTag(r,true)}</span></div>`; }).join("");
       }else{
-        body = rows.slice(s.start, s.end+1).map((r,k)=>`<div class="rline ${cur===s.start+k?"now":""}"><span class="n">${U==="Runde"?"Rd":"R"} ${s.start+k+1} ${esc(r.side)}</span><span>${esc(r.text)}${deltaTag(r,false)}</span></div>`).join("");
+        body = rows.slice(s.start, s.end+1).map((r,k)=>{ const st = stOf(s.start+k, cur);
+          return `<div class="rline ${st}">${mark(st)}<span class="n">${U==="Runde"?"Rd":"R"} ${s.start+k+1} ${esc(r.side)}${st==="now"?`<span class="nowpill">Jetzt</span>`:""}</span><span>${esc(r.text)}${deltaTag(r,false)}</span></div>`; }).join("");
       }
-      return `<details class="sec" ${here?"open":""}><summary><span>${esc(s.name)}${s.reps>1?` · ${s.reps}×`:""}</span><span>${range(s.start,s.end)}</span></summary><div class="rows">${body}</div></details>`;
+      const status = secSt==="done" ? `<span class="st ok">${CK} fertig</span>`
+        : here ? `<span class="st run">läuft · ${Math.round((cur-s.start)/(s.end-s.start+1)*100)}%</span>`
+        : `<span class="st">${range(s.start,s.end)}</span>`;
+      return `<details class="sec ${secSt==="done"?"secdone":""}" ${here?"open":""}><summary><span>${esc(s.name)}${s.reps>1?` · ${s.reps}×`:""}</span>${status}</summary><div class="rows">${body}</div></details>`;
     }).join("")}
     ${(p.glossary||[]).length?`<div class="note"><h3>Abkürzungen</h3>${p.glossary.map(g=>`<p><b>${esc(g.term)}</b> — ${esc(g.text)}</p>`).join("")}</div>`:""}
     ${(p.notes||[]).map(n=>`<div class="note"><h3>${esc(n.title)}</h3><p>${esc(n.text)}</p></div>`).join("")}`;

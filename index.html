@@ -184,6 +184,27 @@ input,textarea,select{font:inherit;color:inherit}
 @keyframes popin{from{opacity:0;transform:scale(.6) translateY(20px)}to{opacity:1;transform:none}}
 @keyframes hop{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-14px) rotate(-6deg)}55%{transform:translateY(0) rotate(4deg)}70%{transform:translateY(-5px)}}
 @media (prefers-reduced-motion:reduce){.mascot,.bubble,.pcard2,.party{animation:none!important}}
+/* Fester Zähler-Bildschirm */
+body.fixed{overflow:hidden;overscroll-behavior:none}
+body.fixed #app{display:flex;flex-direction:column;
+  height:calc(100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
+  height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
+body.fixed #app>.bar{flex:none;width:100%}
+body.fixed .wrap{flex:1;min-height:0;display:flex;flex-direction:column;padding-bottom:0;width:100%}
+body.fixed .tabs{flex:none;margin-bottom:12px}
+body.fixed #tabbody{flex:1;min-height:0;display:flex;flex-direction:column}
+.cmain{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;margin:0 -18px;padding:2px 18px 14px}
+.dock{flex:none;margin:0 -18px;padding:10px 18px 10px;background:var(--paper);box-shadow:0 -10px 18px -14px rgba(42,32,56,.35);position:relative;z-index:2}
+.dstats{display:flex;gap:8px;margin-bottom:10px}
+.dstat{flex:1;display:flex;align-items:baseline;justify-content:center;gap:5px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:7px 4px;font-size:12px;color:var(--muted);white-space:nowrap}
+.dstat b{font-size:16.5px;color:var(--ink);font-variant-numeric:tabular-nums;font-weight:650}
+body.fixed .plus{padding:19px 0 15px}
+body.fixed .plus .sign{font-size:42px}
+body.fixed .undo{margin-top:9px}
+body.fixed .undo button{padding:11px 0}
+.dock .total{margin-top:8px}
+@media (max-height:720px){ .cmain .lastdone{display:none} .cmain .instr p{font-size:16.5px;margin-top:8px} .cmain .instr{padding:15px 16px 14px} .cmain .section-name{margin-bottom:6px} }
+@media (max-height:620px){ body.fixed .plus{padding:14px 0 11px} body.fixed .plus .sign{font-size:34px} .dstats{margin-bottom:7px} }
 /* Freie Zähler */
 .counter{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
 .counter .chead{display:flex;align-items:center;gap:8px;margin-bottom:10px}
@@ -266,7 +287,7 @@ input,textarea,select{font:inherit;color:inherit}
 
 <script>
 "use strict";
-const VERSION = "1.8";
+const VERSION = "1.9";
 const KEY = "lena-handarbeit";
 const BACKUP_DAYS = 14;
 const DAY = 86400000;
@@ -359,10 +380,10 @@ function syncWake(){
 }
 function wakeText(){
   if(!state.settings.wake) return "";
-  if(!wakeSupported) return `<span class="wk off">Display geht aus · braucht iOS 18.4 oder neuer</span>`;
+  if(!wakeSupported) return `<span class="wk off">Display geht aus · ab iOS 18.4</span>`;
   if(wakeLock) return `<span class="wk on">☀︎ Display bleibt an</span>`;
-  if(wakeError) return `<span class="wk off">Display geht aus · einmal tippen, um es erneut zu versuchen</span>`;
-  return `<span class="wk off">Tippe einmal, damit das Display anbleibt</span>`;
+  if(wakeError) return `<span class="wk off">Display geht aus · tippen zum Aktivieren</span>`;
+  return `<span class="wk off">Tippen, damit das Display anbleibt</span>`;
 }
 function updateWakeBadge(){ const el = document.getElementById("wakebadge"); if(el) el.innerHTML = wakeText(); }
 ["touchend","click"].forEach(t=>document.addEventListener(t, ()=>{ if(!wakeLock) syncWake(); }, {capture:true, passive:true}));
@@ -418,6 +439,7 @@ function celebration(){
 const app = document.getElementById("app");
 function render(){
   document.body.dataset.craft = view.craft;
+  if(view.name!=="project") document.body.classList.remove("fixed");
   if(view.name==="home") renderHome();
   else if(view.name==="list") renderList();
   else if(view.name==="project") renderProject();
@@ -531,24 +553,34 @@ function renderProject(){
   if(!p){ view.name="list"; return render(); }
   const right = `<button class="icon-btn" data-menu aria-label="Projekt-Menü"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button>`;
   const tabs = p.mode==="free" ? [["zaehler","Zähler"],["info","Info"]] : [["zaehler","Zähler"],["anleitung","Anleitung"],["info","Info"]];
+  // Kein Springen beim Neuzeichnen: Scrollposition merken, außer eine neue Reihe ist dran.
+  const prevMain = document.querySelector(".cmain");
+  const keepMain = prevMain && !view._resetScroll ? prevMain.scrollTop : 0;
+  const keepY = view._resetScroll ? 0 : window.scrollY;
+  view._resetScroll = false;
+  const fixed = view.tab==="zaehler" && p.mode!=="free";
+  document.body.classList.toggle("fixed", fixed);
   app.innerHTML = `${bar(p.name, "list", right)}
   <div class="wrap">
     <div class="tabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" data-tab="${k}" aria-selected="${view.tab===k}">${l}</button>`).join("")}</div>
     <div id="tabbody"></div></div>`;
   wireBar();
-  app.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{ view.tab=b.dataset.tab; renderProject(); window.scrollTo(0,0); });
+  app.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{ view.tab=b.dataset.tab; view._resetScroll=true; renderProject(); });
   app.querySelector("[data-menu]").onclick = ()=>projectMenu(p);
   const body = document.getElementById("tabbody");
   if(view.tab==="zaehler"){ body.innerHTML = p.mode==="free" ? freeBody(p) : counterBody(p); p.mode==="free" ? wireFree(p) : wireCounter(p); }
   else if(view.tab==="anleitung"){ body.innerHTML = patternBody(p); wirePartSel(); }
   else { body.innerHTML = infoBody(p); wireInfo(p); }
+  const main = document.querySelector(".cmain");
+  if(main) main.scrollTop = keepMain;
+  if(!fixed) window.scrollTo(0, keepY);
   syncWake();
 }
 function partSel(p, idx, mark){
   if(p.parts.length<2) return "";
   return `<div class="partsel">${p.parts.map((pt,i)=>`<button data-part="${i}" aria-pressed="${i===idx}">${esc(pt.name)}${mark&&partDone(p,i)?" ✓":""}</button>`).join("")}</div>`;
 }
-function wirePartSel(){ app.querySelectorAll("[data-part]").forEach(b=>b.onclick=()=>{ view.partIdx=+b.dataset.part; renderProject(); }); }
+function wirePartSel(){ app.querySelectorAll("[data-part]").forEach(b=>b.onclick=()=>{ view.partIdx=+b.dataset.part; view._resetScroll=true; renderProject(); }); }
 
 /* ---- Zähler nach Anleitung ---- */
 const CK = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`;
@@ -567,7 +599,7 @@ function counterBody(p){
   if(done >= rows.length){
     const allDone = p.parts.every((_,i)=>partDone(p,i));
     const next = p.parts.findIndex((_,i)=>!partDone(p,i));
-    return `${partSel(p, idx, true)}
+    return `<div class="cmain">${partSel(p, idx, true)}
       <div class="finish">${celebration()}
         <h3>${allDone ? (p.status==="fertig"?"Fertig!":"Geschafft!") : esc(part.name)+" ist fertig"}</h3>
         <p>${allDone ? `${totalRows(p)} ${Us} ${daysText(p)}. Jetzt nur noch die Fäden vernähen.` : `Weiter mit „${esc(p.parts[next].name)}“.`}</p>
@@ -575,7 +607,8 @@ function counterBody(p){
         ${allDone && p.status!=="fertig"?`<button class="btn" data-complete>Projekt abschließen</button>`:""}
         ${allDone && p.status==="fertig"?`<button class="btn ghost" data-replay>Nochmal feiern 🎉</button>`:""}
       </div>
-      <div class="undo"><button data-minus>− Zurück</button><button data-jump>Springen</button></div>${extras}`;
+      ${extras}</div>
+      <div class="dock"><div class="undo"><button data-minus>− Zurück</button><button data-jump>Springen</button></div></div>`;
   }
 
   const cur = rows[done];
@@ -598,7 +631,7 @@ function counterBody(p){
     if(k>0){ const dist = k-done; hint = dist===1 ? `Nächste ${U}: ${changeWord(rows[k].delta)}` : `${changeWord(rows[k].delta).split(" (")[0]} in ${dist} ${Us}`; }
   }
   const top = inBlock ? `${U} ${cur.rowInBlock} von ${cur.blockLen}` : `${U} ${done+1}`;
-  return `${partSel(p, idx, true)}
+  return `<div class="cmain">${partSel(p, idx, true)}
     <div class="section-name"><span>${esc(cur.sectionName)}</span><span>${inBlock?`${U} ${done+1} von ${rows.length}`:`von ${rows.length} ${Us}`}</span></div>
     ${lastDone}
     <div class="instr ${cur.delta?"change":""}">
@@ -607,16 +640,19 @@ function counterBody(p){
       <p>${esc(cur.text)}</p>${dots}
       ${hint?`<div class="nexthint">${hint}</div>`:""}
     </div>
-    <div class="stats">
-      <div class="stat"><b>${cur.repeatTotal>1 ? cur.repeat+"/"+cur.repeatTotal : "–"}</b><span>Wiederholung</span></div>
-      <div class="stat"><b>${stitchesNow}</b><span>Maschen</span></div>
-      <div class="stat"><b>${Math.round(done/rows.length*100)}%</b><span>Fortschritt</span></div>
-    </div>
-    <button class="plus" data-plus><span class="sign">+</span><span class="lbl">${U} ${done+1} fertig</span></button>
-    <div class="undo"><button data-minus>− Zurück</button><button data-jump>Springen</button></div>
     ${extras}
     <div class="total">${p.parts.length>1?esc(part.name)+" · ":""}${done} von ${rows.length} ${Us} gezählt</div>
-    <div class="total" id="wakebadge">${wakeText()}</div>`;
+    </div>
+    <div class="dock">
+      <div class="dstats">
+        <div class="dstat"><b>${cur.repeatTotal>1 ? cur.repeat+"/"+cur.repeatTotal : "–"}</b>Wdh.</div>
+        <div class="dstat"><b>${stitchesNow}</b>Maschen</div>
+        <div class="dstat"><b>${Math.round(done/rows.length*100)}%</b>fertig</div>
+      </div>
+      <button class="plus" data-plus><span class="sign">+</span><span class="lbl">${U} ${done+1} fertig</span></button>
+      <div class="undo"><button data-minus>− Zurück</button><button data-jump>Springen</button></div>
+      <div class="total" id="wakebadge">${wakeText()}</div>
+    </div>`;
 }
 function auxAndNote(part){
   const aux = (part.aux||[]).map((a,i)=>`<div class="aux"><button class="an" data-auxedit="${i}">${esc(a.name)}</button>
@@ -629,6 +665,7 @@ let lastPlus = 0;
 function wireCounter(p){
   const idx = Math.min(view.partIdx, p.parts.length-1), part = p.parts[idx], rows = projectRows(p, idx), U = unitOf(p);
   const touch = ()=>{ const fin = syncStatus(p); p.updated = Date.now(); save(); renderProject(); if(fin) celebrate(p); };
+  const touchRow = ()=>{ view._resetScroll = true; touch(); };
   wirePartSel();
   const plus = app.querySelector("[data-plus]");
   if(plus) plus.onclick = ()=>{
@@ -636,12 +673,12 @@ function wireCounter(p){
     if(gap < 450) return;                // Doppeltipp abfangen
     lastPlus = now;
     const before = part.row||0;
-    part.row = Math.min(before+1, rows.length); touch();
-    if(gap < 2500) toast(`${U} ${before+1} gezählt`, "Rückgängig", ()=>{ part.row = before; touch(); });
+    part.row = Math.min(before+1, rows.length); touchRow();
+    if(gap < 2500) toast(`${U} ${before+1} gezählt`, "Rückgängig", ()=>{ part.row = before; touchRow(); });
   };
-  app.querySelectorAll("[data-minus]").forEach(b=>b.onclick = ()=>{ part.row = Math.max((part.row||0)-1, 0); touch(); });
+  app.querySelectorAll("[data-minus]").forEach(b=>b.onclick = ()=>{ part.row = Math.max((part.row||0)-1, 0); touchRow(); });
   app.querySelectorAll("[data-jump]").forEach(b=>b.onclick = ()=>jumpSheet(p, idx));
-  const np = app.querySelector("[data-nextpart]"); if(np) np.onclick = ()=>{ view.partIdx = +np.dataset.nextpart; renderProject(); };
+  const np = app.querySelector("[data-nextpart]"); if(np) np.onclick = ()=>{ view.partIdx = +np.dataset.nextpart; view._resetScroll = true; renderProject(); };
   const comp = app.querySelector("[data-complete]"); if(comp) comp.onclick = ()=>touch();
   const rep = app.querySelector("[data-replay]"); if(rep) rep.onclick = ()=>celebrate(p);
   wireExtras(p, part, touch);
@@ -720,7 +757,7 @@ function jumpSheet(p, idx){
     <p class="sub" style="margin:18px 0 8px">Oder an den Anfang eines Abschnitts</p>
     ${secs.map(s=>`<button class="opt" data-sec="${s.start}"><b>${esc(s.name)}</b><span>ab ${U} ${s.start+1}</span></button>`).join("")}
     <button class="btn ghost" data-close>Abbrechen</button>`, el=>{
-    const set = v=>{ part.row = Math.max(0, Math.min(rows.length, v)); const fin = syncStatus(p); p.updated=Date.now(); save(); closeSheet(); renderProject();
+    const set = v=>{ part.row = Math.max(0, Math.min(rows.length, v)); view._resetScroll = true; const fin = syncStatus(p); p.updated=Date.now(); save(); closeSheet(); renderProject();
       if(fin) celebrate(p); else toast(`Weiter bei ${U} ${Math.min(part.row+1, rows.length)}`); };
     el.querySelector("[data-ok]").onclick = ()=>set(parseInt(el.querySelector("#jr").value||"0",10));
     el.querySelectorAll("[data-sec]").forEach(b=>b.onclick=()=>set(+b.dataset.sec));
@@ -1121,6 +1158,9 @@ function toast(msg, actionLabel, action){
   t.innerHTML = esc(msg) + (actionLabel?`<button type="button">${esc(actionLabel)}</button>`:"");
   t.classList.toggle("act", !!actionLabel);
   if(actionLabel) t.querySelector("button").onclick = ()=>{ t.classList.remove("on"); action(); };
+  // Im festen Zähler direkt über dem Bedienbereich zeigen, damit nichts verdeckt wird
+  const dock = document.body.classList.contains("fixed") && document.querySelector(".dock");
+  t.style.bottom = dock ? (window.innerHeight - dock.getBoundingClientRect().top + 10) + "px" : "";
   t.classList.add("on"); clearTimeout(toastT);
   toastT = setTimeout(()=>t.classList.remove("on"), actionLabel?3500:1900);
 }

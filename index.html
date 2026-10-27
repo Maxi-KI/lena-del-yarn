@@ -385,7 +385,7 @@ body.fixed .undo button{padding:11px 0}
 
 <script>
 "use strict";
-const VERSION = "2.2";
+const VERSION = "2.3";
 const KEY = "lena-handarbeit";
 const BACKUP_DAYS = 14;
 const DAY = 86400000;
@@ -1241,43 +1241,117 @@ function recapData(p, st){
   else if(tea>0) extra.push(`≈ ${tea} Tassen Tee`);
   return {fin, free, days, pct, fav, tea, stats, meta, extra:extra.join("  ·  ")};
 }
-/* Umriss des Strickstücks: eine Kante gerade, die andere folgt der Maschenzahl –
-   so sieht der Sophie Scarf wirklich aus. Das ist die "Route". */
-function scarfShape(P){
-  const rowH = 0.5;                                 // kraus rechts: Reihe ≈ halbe Maschenbreite
-  const top = P.map((v,i)=>[i*rowH, v]), bottom = P.map((_,i)=>[i*rowH, 0]).reverse();
-  return top.concat(bottom);
+/* Form des Strickstücks als "Route".
+   form: "einseitig" (eine Kante gerade, z. B. Sophie Scarf), "beidseitig" (symmetrisch, z. B. Dreieckstuch),
+   "rund" (in Runden, von der Seite gesehen, z. B. Mütze oder Amigurumi). */
+const FORMS = ["einseitig","beidseitig","rund"];
+function pieceSpec(p){
+  if(p.mode==="free" || !p.parts || !p.parts.length) return [];
+  const defForm = p.craft==="haekeln" ? "rund" : "einseitig";
+  const defRh = p.craft==="haekeln" ? 0.9 : 0.5;
+  const sz = p.sizeIdx||0;
+  return p.parts.map((pt,i)=>({
+    name: pt.name,
+    P: [castOnOf(pt, sz), ...projectRows(p,i).map(r=>r.stitches)],
+    form: FORMS.includes(pt.form) ? pt.form : FORMS.includes(p.form) ? p.form : defForm,
+    rh: +(pt.reihenhoehe || p.reihenhoehe || defRh)
+  })).filter(x=>x.P.length>1);
 }
-function fitShape(pts, box, angle){
-  const ca = Math.cos(angle), sa = Math.sin(angle);
-  const r = pts.map(([x,y])=>[x*ca - y*sa, x*sa + y*ca]);
-  const xs = r.map(p=>p[0]), ys = r.map(p=>p[1]);
-  const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
-  const s = Math.min(box.w/(maxX-minX), box.h/(maxY-minY));
-  const ox = box.x + (box.w - (maxX-minX)*s)/2 - minX*s, oy = box.y + (box.h - (maxY-minY)*s)/2 - minY*s;
-  return r.map(([x,y])=>[ox+x*s, oy+y*s]);
+function pieceGeom(spec){
+  const half = v => spec.form==="rund" ? v/Math.PI/2 : v/2;
+  const top = [], bot = [];
+  spec.P.forEach((v,i)=>{ const x = i*spec.rh;
+    if(spec.form==="einseitig"){ top.push([x, -v]); bot.push([x, 0]); }
+    else { top.push([x, -half(v)]); bot.push([x, half(v)]); } });
+  let wi = 0; spec.P.forEach((v,i)=>{ if(v>spec.P[wi]) wi = i; });
+  return {top, bot, wide:wi};
 }
 function drawRoute(c, p, st, box, opt){
   opt = opt||{};
-  let pts, n = 0;
-  if(st.profile && st.profile.length>1){ pts = fitShape(scarfShape(st.profile), box, opt.angle ?? -0.52); n = st.profile.length; }
-  else { const cx = box.x+box.w/2, cy = box.y+box.h/2, R = Math.min(box.w,box.h)*0.42;
-    pts = Array.from({length:120},(_,i)=>{ const a = i/119*Math.PI*2*1.0; const rr2 = R*(0.85+0.15*Math.sin(a*3)); return [cx+Math.cos(a)*rr2, cy+Math.sin(a)*rr2]; }); }
-  const path = ()=>{ c.beginPath(); pts.forEach(([x,y],i)=> i?c.lineTo(x,y):c.moveTo(x,y)); };
+  const specs = pieceSpec(p);
   c.save(); c.lineJoin = "round"; c.lineCap = "round";
-  if(opt.fill){ path(); c.closePath(); c.fillStyle = opt.fill; c.fill(); }
-  if(opt.casing){ path(); if(n) c.closePath(); c.strokeStyle = opt.casing; c.lineWidth = opt.lw*1.9; c.stroke(); }
-  path(); if(n) c.closePath(); c.strokeStyle = opt.line||OR; c.lineWidth = opt.lw; c.stroke();
-  if(opt.markers){
-    const [sx,sy] = pts[n ? pts.length-1 : 0];       // Anschlag (Spitze, untere Kante)
-    const [fx,fy] = n ? pts[n-1] : pts[pts.length-1]; // letzte Reihe
-    const rad = opt.lw*1.25;
-    c.fillStyle = "#fff"; c.beginPath(); c.arc(sx,sy,rad+6,0,7); c.fill();
-    c.fillStyle = "#1FAA59"; c.beginPath(); c.arc(sx,sy,rad,0,7); c.fill();
-    c.fillStyle = "#fff"; c.beginPath(); c.arc(fx,fy,rad+6,0,7); c.fill();
-    c.save(); c.beginPath(); c.arc(fx,fy,rad,0,7); c.clip();
-    const q = rad/2; for(let i=-2;i<2;i++) for(let j=-2;j<2;j++){ c.fillStyle = (i+j)%2 ? "#111" : "#fff"; c.fillRect(fx+i*q, fy+j*q, q, q); }
+  if(!specs.length){                                     // freies Zählen: Knäuel als Ersatz
+    const cx = box.x+box.w/2, cy = box.y+box.h/2, R = Math.min(box.w,box.h)*0.38;
+    c.fillStyle = opt.fill||"rgba(252,76,2,.2)"; c.beginPath(); c.arc(cx,cy,R,0,7); c.fill();
+    c.strokeStyle = opt.ridge||"rgba(252,76,2,.4)"; c.lineWidth = opt.lw*0.5;
+    for(let k=-3;k<=3;k++){ c.beginPath(); c.ellipse(cx,cy,R*Math.abs(k)/3.4+4,R,0.5,0,7); c.stroke(); }
+    if(opt.casing){ c.strokeStyle = opt.casing; c.lineWidth = opt.lw*1.9; c.beginPath(); c.arc(cx,cy,R,0,7); c.stroke(); }
+    c.strokeStyle = OR; c.lineWidth = opt.lw; c.beginPath(); c.arc(cx,cy,R,0,7); c.stroke();
+    c.restore(); return;
+  }
+  const geoms = specs.map(pieceGeom);
+  const multi = specs.length>1, round = specs.every(s=>s.form==="rund");
+  const rot = (pts, a)=>{ const ca = Math.cos(a), sa = Math.sin(a); return pts.map(([x,y])=>[x*ca-y*sa, x*sa+y*ca]); };
+  const layout = a=>{
+    const rs = geoms.map(g=>({top:rot(g.top,a), bot:rot(g.bot,a)}));
+    const bbs = rs.map(r=>{ const all = r.top.concat(r.bot), xs = all.map(q=>q[0]), ys = all.map(q=>q[1]);
+      return {x0:Math.min(...xs), x1:Math.max(...xs), y0:Math.min(...ys), y1:Math.max(...ys)}; });
+    const H = Math.max(...bbs.map(b=>b.y1-b.y0)), gap = multi ? H*0.25 : 0;
+    let cx = 0; const offs = bbs.map(b=>{ const o = [cx - b.x0, -(b.y0+b.y1)/2]; cx += (b.x1-b.x0) + gap; return o; });
+    const W = cx - gap, s = Math.min(box.w/W, box.h/H);
+    return {rs, offs, s, W, H};
+  };
+  let best;
+  if(multi || round){
+    // Senkrecht: das schmalere Ende nach oben (Mütze: Bündchen unten, Amigurumi: Fadenring oben)
+    const P0 = specs[0].P, up = P0[0] > P0[P0.length-1] ? -Math.PI/2 : Math.PI/2;
+    best = {a:up, L:layout(up)};
+  }
+  else { for(let a=-1.3; a<=-0.05; a+=0.05){ const L = layout(a); if(!best || L.s>best.L.s) best = {a, L}; } }
+  const {rs, offs, s, W, H} = best.L;
+  const ox = box.x + (box.w - W*s)/2, oy = box.y + box.h/2;
+  const T = (q,i)=>[ox + (q[0]+offs[i][0])*s, oy + (q[1]+offs[i][1])*s];
+  const polys = rs.map((r,i)=>({top:r.top.map(q=>T(q,i)), bot:r.bot.map(q=>T(q,i))}));
+  const outline = pl=>{ c.beginPath(); pl.top.forEach(([x,y],k)=>k?c.lineTo(x,y):c.moveTo(x,y)); pl.bot.slice().reverse().forEach(([x,y])=>c.lineTo(x,y)); c.closePath(); };
+  polys.forEach((pl,i)=>{
+    outline(pl); c.fillStyle = opt.fill||"rgba(252,76,2,.2)"; c.fill();
+    // Maschen-Rippen quer zur Strickrichtung, damit man das Gestrick erkennt
+    c.save(); outline(pl); c.clip();
+    const n = pl.top.length, step = Math.max(1, Math.round(n/ (opt.ridges||70)));
+    c.strokeStyle = opt.ridge||"rgba(252,76,2,.45)"; c.lineWidth = Math.max(2, opt.lw*0.32);
+    for(let k=0;k<n;k+=step){ c.beginPath(); c.moveTo(...pl.top[k]); c.lineTo(...pl.bot[k]); c.stroke(); }
     c.restore();
+    if(opt.casing){ outline(pl); c.strokeStyle = opt.casing; c.lineWidth = opt.lw*1.9; c.stroke(); }
+    outline(pl); c.strokeStyle = opt.line||OR; c.lineWidth = opt.lw; c.stroke();
+  });
+  const mid = (pl,k)=>[(pl.top[k][0]+pl.bot[k][0])/2, (pl.top[k][1]+pl.bot[k][1])/2];
+  const first = polys[0], last = polys[polys.length-1];
+  const startPt = specs[0].form==="einseitig" ? first.bot[0] : mid(first,0);
+  const endPt = mid(last, last.top.length-1);
+  if(opt.markers){
+    const rad = opt.lw*1.3;
+    c.fillStyle = "#fff"; c.beginPath(); c.arc(...startPt, rad+6, 0, 7); c.fill();
+    c.fillStyle = "#1FAA59"; c.beginPath(); c.arc(...startPt, rad, 0, 7); c.fill();
+    c.fillStyle = "#fff"; c.beginPath(); c.arc(...endPt, rad+6, 0, 7); c.fill();
+    c.save(); c.beginPath(); c.arc(...endPt, rad, 0, 7); c.clip();
+    const q = rad/2; for(let i=-2;i<2;i++) for(let j=-2;j<2;j++){ c.fillStyle = (i+j)%2 ? "#111" : "#fff"; c.fillRect(endPt[0]+i*q, endPt[1]+j*q, q, q); }
+    c.restore();
+  }
+  if(opt.labels){
+    const pill = (text, x, y, dx, dy)=>{
+      c.font = MID(30); const w = c.measureText(text).width + 40, h = 54;
+      let px = x + dx - (dx<0 ? w : dx===0 ? w/2 : 0), py = y + dy - h/2;
+      px = Math.max(box.x-40, Math.min(box.x+box.w+40-w, px)); py = Math.max(box.y-60, Math.min(box.y+box.h+30, py));
+      c.save(); c.shadowColor = "rgba(0,0,0,.18)"; c.shadowBlur = 12; c.shadowOffsetY = 3;
+      c.fillStyle = "#fff"; rr(c, px, py, w, h, 27); c.fill(); c.restore();
+      c.fillStyle = "#242428"; c.fillText(text, px+20, py+37);
+    };
+    const away = (pt, other)=>{ const dx = pt[0]-other[0]; return dx>=0 ? 34 : -34; };
+    pill(specs[0].P[0] ? `Anschlag · ${specs[0].P[0]} M` : "Start", ...startPt, away(startPt,endPt), 0);
+    pill(p.status==="fertig" ? "Fertig!" : "Ziel", ...endPt, away(endPt,startPt), 0);
+    if(!multi){
+      const g = geoms[0], k = g.wide, wp = polys[0].top[k];
+      const nn = polys[0].top.length;
+      if(k > nn*0.06 && k < nn*0.94){
+        c.fillStyle = "#fff"; c.beginPath(); c.arc(...wp, opt.lw*0.9, 0, 7); c.fill();
+        c.strokeStyle = OR; c.lineWidth = 5; c.beginPath(); c.arc(...wp, opt.lw*0.9, 0, 7); c.stroke();
+        pill(`breiteste Stelle · ${specs[0].P[k]} M`, wp[0], wp[1]-62, 0, 0);
+      }
+    }else{
+      polys.forEach((pl,i)=>{ const ys = pl.bot.concat(pl.top).map(q=>q[1]), xs = pl.bot.concat(pl.top).map(q=>q[0]);
+        const x = (Math.min(...xs)+Math.max(...xs))/2, y = Math.max(...ys);
+        c.fillStyle = "#242428"; c.font = HEAVY(32); c.textAlign = "center"; c.fillText(specs[i].name, x, y+56); c.textAlign = "left"; });
+    }
   }
   c.restore();
 }
@@ -1315,7 +1389,7 @@ function drawCard(kind, p, st, photo, preview){
   if(kind==="karte"){
     const mapH = 1130;
     mapBackground(c, 0, 0, CW, mapH);
-    drawRoute(c, p, st, {x:110, y:150, w:CW-220, h:mapH-300}, {lw:15, casing:"#fff", fill:"rgba(252,76,2,.14)", markers:true});
+    drawRoute(c, p, st, {x:120, y:190, w:CW-240, h:mapH-360}, {lw:13, casing:"#fff", fill:"rgba(255,226,212,.92)", ridge:"rgba(252,76,2,.42)", markers:true, labels:true, ridges:80});
     c.fillStyle = "#fff"; c.fillRect(0, mapH, CW, CH-mapH);
     c.fillStyle = "rgba(0,0,0,.08)"; c.fillRect(0, mapH, CW, 3);
     c.fillStyle = OR; c.beginPath(); c.arc(118, mapH+108, 42, 0, 7); c.fill();
@@ -1337,7 +1411,7 @@ function drawCard(kind, p, st, photo, preview){
         c.fillStyle = "#fff"; c.textAlign = "center"; c.font = HEAVY(110); c.fillText("+", CW/2, 720); c.font = MID(40); c.fillText("Foto hinzufügen", CW/2, 805); c.textAlign = "left"; } }
     const g = c.createLinearGradient(0, CH*0.45, 0, CH); g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(0.5,"rgba(0,0,0,.45)"); g.addColorStop(1,"rgba(0,0,0,.78)");
     c.fillStyle = g; c.fillRect(0, CH*0.45, CW, CH*0.55);
-    drawRoute(c, p, st, {x:CW-430, y:1020, w:350, h:260}, {lw:9, casing:"rgba(255,255,255,.95)", markers:false});
+    drawRoute(c, p, st, {x:CW-430, y:1020, w:350, h:260}, {lw:8, casing:"rgba(255,255,255,.95)", fill:"rgba(255,255,255,.35)", ridge:"rgba(252,76,2,.55)", markers:true, ridges:40});
     const t = fitTitle(c, p.name, s=>HEAVY(s), CW-152, 84, 54, 1);
     c.fillStyle = "#fff"; c.font = HEAVY(t.size); c.fillText(t.lines[0], 76, 1440);
     c.fillStyle = "rgba(255,255,255,.8)"; c.font = MID(32); c.fillText(d.meta, 76, 1494);
@@ -1352,7 +1426,7 @@ function drawCard(kind, p, st, photo, preview){
       let fs = 140; c.font = HEAVY(fs); while(c.measureText(s[1]).width > CW-160 && fs>70){ fs -= 4; c.font = HEAVY(fs); }
       c.fillText(s[1], CW/2, y+142); });
     c.restore();
-    drawRoute(c, p, st, {x:220, y:1250, w:CW-440, h:300}, {lw:12, casing:"#fff", markers:true});
+    drawRoute(c, p, st, {x:200, y:1230, w:CW-400, h:340}, {lw:11, casing:"#fff", fill:"rgba(255,255,255,.35)", ridge:"rgba(252,76,2,.6)", markers:true, ridges:55});
     c.save(); c.shadowColor = "rgba(0,0,0,.28)"; c.shadowBlur = 14; wordmark(c, CW/2, 1690, "#fff", 50, "center"); c.restore();
   }
   return cv;
@@ -1601,7 +1675,8 @@ function createFromPattern(t, sizeIdx){
   const p = {id:uid(), patternId:t.id, craft:t.craft, mode:"pattern", name:t.name, designer:t.designer||"", unit:t.unit||"",
     sizeIdx, sizeLabel:(t.sizes&&t.sizes[sizeIdx])||"Einheitsgröße",
     intro:t.intro||"", glossary:t.glossary||[], notes:t.notes||[], meta:Object.assign({}, t.meta||{}),
-    parts:(t.parts||[]).map(pt=>({name:pt.name, castOn:pt.castOn, sections:pt.sections, row:0, aux:[], note:""})),
+    form:t.form||"", reihenhoehe:t.reihenhoehe||0,
+    parts:(t.parts||[]).map(pt=>({name:pt.name, castOn:pt.castOn, sections:pt.sections, form:pt.form||"", reihenhoehe:pt.reihenhoehe||0, row:0, aux:[], note:""})),
     status:"laufend", created:Date.now(), updated:Date.now()};
   state.projects.push(p); save(); openProject(p);
 }
@@ -1682,6 +1757,7 @@ function checkPattern(t){
   if(!t || typeof t!=="object") return "Unbekanntes Format";
   if(!t.name) return "Der Anleitung fehlt ein Name";
   if(!Array.isArray(t.parts) || !t.parts.length) return "Die Anleitung enthält keine Teile";
+  if(t.form && !FORMS.includes(t.form)) return `Unbekannte Form „${t.form}“ – erlaubt: ${FORMS.join(", ")}`;
   const sizes = Math.max(1, Array.isArray(t.sizes)?t.sizes.length:1);
   for(const pt of t.parts){
     if(!Array.isArray(pt.sections) || !pt.sections.length) return `„${pt.name||"Teil"}“ enthält keine Abschnitte`;

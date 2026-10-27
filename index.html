@@ -12,6 +12,8 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Lena Del Yarn</title>
 <style>
+@font-face{font-family:Brico;src:url("fonts/BricolageGrotesque-Bold.ttf") format("truetype");font-weight:700;font-display:swap}
+@font-face{font-family:Brico;src:url("fonts/BricolageGrotesque-Regular.ttf") format("truetype");font-weight:400;font-display:swap}
 :root{
   --paper:#F7F4EF; --card:#FFFFFF; --ink:#2A2038; --muted:#6F6879; --line:#E4DED5;
   --knit:#6C5CE7; --knit-soft:#ECE9FD; --crochet:#D45A2E; --crochet-soft:#FCE8DF;
@@ -275,17 +277,29 @@ body.fixed .undo button{padding:11px 0}
 .stx-bar b{color:#fff}
 .stx-body{padding:0 0 calc(30px + env(safe-area-inset-bottom,0px));max-width:none}
 .stage{padding:6px 0 18px;color:#fff;text-align:center}
-.car{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px calc(50% - min(36vw,150px));scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.car{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 0scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .car::-webkit-scrollbar{display:none}
-.slide{flex:none;width:min(72vw,300px);margin:0;scroll-snap-align:center}
+.slide{flex:none;--sw:min(60vw,250px,calc((100vh - 390px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)) * .5625));--sw:min(60vw,250px,calc((100dvh - 390px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)) * .5625));width:var(--sw);margin:0;scroll-snap-align:center}
 .frame{aspect-ratio:9/16;border-radius:22px;overflow:hidden;background:#2A2440 center/cover no-repeat;box-shadow:0 14px 40px rgba(0,0,0,.45)}
 .slide.sticker .frame{background-color:#3a3150;background-image:linear-gradient(160deg,#4b3f6b,#1d1830)}
 .frame canvas{display:block;width:100%;height:100%}
 .slide figcaption{font-size:13px;color:rgba(255,255,255,.7);margin-top:9px}
+.shd{padding:2px 24px 10px}
+.shd h2{font:700 30px/1.1 Brico,-apple-system,sans-serif;letter-spacing:-.02em;color:#fff}
+.shd p{margin-top:5px;font-size:14px;color:rgba(255,255,255,.65)}
+.fmt{display:inline-flex;background:rgba(255,255,255,.1);border-radius:999px;padding:3px;margin-bottom:12px}
+.fmt button{padding:7px 14px;border-radius:999px;font-size:13.5px;font-weight:600;color:rgba(255,255,255,.7)}
+.fmt button[aria-pressed="true"]{background:#fff;color:#15111F}
+.car.post .slide:not(.sticker) .frame{aspect-ratio:4/5}
+.cpad{flex:none;width:20px}
+.car{align-items:center}
+.sw{display:flex;justify-content:center;gap:12px;margin:0 0 2px}
+.sw button{width:30px;height:30px;border-radius:50%;background:var(--c);box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+.sw button[aria-pressed="true"]{box-shadow:0 0 0 3px #15111F,0 0 0 5px #fff}
 .cdots{display:flex;justify-content:center;gap:6px;margin:6px 0 14px}
 .cdots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.3);transition:all .2s}
 .cdots i.on{background:#fff;width:20px;border-radius:4px}
-.sact{display:flex;gap:10px;padding:0 18px;max-width:480px;margin:0 auto}
+.sact{display:flex;gap:10px;padding:12px 18px calc(12px + env(safe-area-inset-bottom,0px));max-width:480px;margin:0 auto;position:sticky;bottom:0;z-index:3;background:linear-gradient(rgba(21,17,31,0),#15111F 28%)}
 .sbtn{flex:1.4;display:flex;align-items:center;justify-content:center;gap:8px;padding:15px;border-radius:16px;font-size:16px;font-weight:700;color:#fff;
   background:linear-gradient(135deg,#FF8A5B,#FC4C02)}
 .sbtn.ghost{flex:1;background:rgba(255,255,255,.12);font-weight:600}
@@ -385,7 +399,7 @@ body.fixed .undo button{padding:11px 0}
 
 <script>
 "use strict";
-const VERSION = "2.3";
+const VERSION = "2.4";
 const KEY = "lena-handarbeit";
 const BACKUP_DAYS = 14;
 const DAY = 86400000;
@@ -1215,6 +1229,8 @@ function drawProfile(c, P, pos, x, y, w, h, line, fill, lw){
 const OR = "#FC4C02";
 const HEAVY = (s, it)=>`${it?"italic ":""}800 ${s}px -apple-system, "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif`;
 const MID = s=>`600 ${s}px -apple-system, "SF Pro Text", system-ui, "Segoe UI", Roboto, sans-serif`;
+const BRICO = (w, s)=>`${w} ${s}px Brico, -apple-system, "SF Pro Display", system-ui, sans-serif`;
+const fontsReady = (document.fonts ? Promise.all([document.fonts.load(BRICO(700,40)), document.fonts.load(BRICO(400,40))]) : Promise.resolve()).catch(()=>{});
 function wordmark(c, x, y, col, size, align){
   c.save(); c.font = HEAVY(size, true); c.fillStyle = col; c.textAlign = align||"left"; c.textBaseline = "alphabetic";
   c.fillText("LENA DEL YARN", x, y); c.restore();
@@ -1329,12 +1345,12 @@ function drawRoute(c, p, st, box, opt){
   }
   if(opt.labels){
     const pill = (text, x, y, dx, dy)=>{
-      c.font = MID(30); const w = c.measureText(text).width + 40, h = 54;
+      c.font = BRICO(700, 30); const w = c.measureText(text).width + 40, h = 54;
       let px = x + dx - (dx<0 ? w : dx===0 ? w/2 : 0), py = y + dy - h/2;
       px = Math.max(box.x-40, Math.min(box.x+box.w+40-w, px)); py = Math.max(box.y-60, Math.min(box.y+box.h+30, py));
       c.save(); c.shadowColor = "rgba(0,0,0,.18)"; c.shadowBlur = 12; c.shadowOffsetY = 3;
-      c.fillStyle = "#fff"; rr(c, px, py, w, h, 27); c.fill(); c.restore();
-      c.fillStyle = "#242428"; c.fillText(text, px+20, py+37);
+      c.fillStyle = opt.pillBg||"#fff"; rr(c, px, py, w, h, 27); c.fill(); c.restore();
+      c.fillStyle = opt.pillFg||"#242428"; c.fillText(text, px+20, py+37);
     };
     const away = (pt, other)=>{ const dx = pt[0]-other[0]; return dx>=0 ? 34 : -34; };
     pill(specs[0].P[0] ? `Anschlag · ${specs[0].P[0]} M` : "Start", ...startPt, away(startPt,endPt), 0);
@@ -1350,7 +1366,7 @@ function drawRoute(c, p, st, box, opt){
     }else{
       polys.forEach((pl,i)=>{ const ys = pl.bot.concat(pl.top).map(q=>q[1]), xs = pl.bot.concat(pl.top).map(q=>q[0]);
         const x = (Math.min(...xs)+Math.max(...xs))/2, y = Math.max(...ys);
-        c.fillStyle = "#242428"; c.font = HEAVY(32); c.textAlign = "center"; c.fillText(specs[i].name, x, y+56); c.textAlign = "left"; });
+        c.fillStyle = opt.pillBg||"#242428"; c.font = BRICO(700, 34); c.textAlign = "center"; c.fillText(specs[i].name, x, y+56); c.textAlign = "left"; });
     }
   }
   c.restore();
@@ -1378,62 +1394,84 @@ function mapBackground(c, x, y, w, h){
 }
 function statRow(c, stats, x, y, colW, labelCol, valueCol, labelSize, valueSize, maxW){
   stats.forEach((s,i)=>{ const xx = x + i*colW;
-    c.fillStyle = labelCol; c.font = MID(labelSize); c.fillText(s[0], xx, y);
-    let fs = valueSize; c.font = HEAVY(fs); while(c.measureText(s[1]).width > maxW && fs>valueSize*0.55){ fs -= 2; c.font = HEAVY(fs); }
-    c.fillStyle = valueCol; c.fillText(s[1], xx, y + valueSize*1.05); });
+    c.fillStyle = labelCol; c.font = BRICO(400, labelSize); c.fillText(s[0], xx, y);
+    let fs = valueSize; c.font = BRICO(700, fs); while(c.measureText(s[1]).width > maxW && fs>valueSize*0.5){ fs -= 2; c.font = BRICO(700, fs); }
+    c.fillStyle = valueCol; c.fillText(s[1], xx, y + valueSize*1.02); });
 }
-function drawCard(kind, p, st, photo, preview){
-  const cv = document.createElement("canvas"); cv.width = CW; cv.height = CH;
+const LOOKS = {
+  orange:{name:"Orange", bg:"#FC4C02", fg:"#FFFFFF", sub:"rgba(255,255,255,.78)"},
+  lila:  {name:"Lila",   bg:"#6C5CE7", fg:"#FFFFFF", sub:"rgba(255,255,255,.78)"},
+  lime:  {name:"Lime",   bg:"#D7F54A", fg:"#141414", sub:"rgba(20,20,20,.62)"},
+  nacht: {name:"Schwarz",bg:"#141414", fg:"#FFFFFF", sub:"rgba(255,255,255,.66)", route:"#FC4C02"},
+  creme: {name:"Creme",  bg:"#F3EEE4", fg:"#1B1B1B", sub:"rgba(27,27,27,.6)", route:"#FC4C02", tex:true}
+};
+const hexA = (hex, a)=>{ const n = parseInt(hex.slice(1),16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`; };
+function drawCard(kind, p, st, photo, preview, look){
+  look = look||{};
+  const L = LOOKS[look.color] || LOOKS.orange;
+  const post = look.fmt==="post" && kind!=="sticker";
+  const H = post ? 1350 : CH, W = CW;
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
   const c = cv.getContext("2d"), d = recapData(p, st);
   c.textBaseline = "alphabetic";
-  if(kind==="karte"){
-    const mapH = 1130;
-    mapBackground(c, 0, 0, CW, mapH);
-    drawRoute(c, p, st, {x:120, y:190, w:CW-240, h:mapH-360}, {lw:13, casing:"#fff", fill:"rgba(255,226,212,.92)", ridge:"rgba(252,76,2,.42)", markers:true, labels:true, ridges:80});
-    c.fillStyle = "#fff"; c.fillRect(0, mapH, CW, CH-mapH);
-    c.fillStyle = "rgba(0,0,0,.08)"; c.fillRect(0, mapH, CW, 3);
-    c.fillStyle = OR; c.beginPath(); c.arc(118, mapH+108, 42, 0, 7); c.fill();
-    c.fillStyle = "#fff"; c.font = HEAVY(40); c.textAlign = "center"; c.fillText("L", 118, mapH+122); c.textAlign = "left";
-    c.fillStyle = "#242428"; c.font = HEAVY(38); c.fillText("Lena", 182, mapH+98);
-    c.fillStyle = "#6D6D78"; c.font = MID(30); c.fillText(d.meta, 182, mapH+140);
-    const t = fitTitle(c, p.name, s=>HEAVY(s), CW-152, 76, 50, 1);
-    c.fillStyle = "#242428"; c.font = HEAVY(t.size); c.fillText(t.lines[0], 76, mapH+262);
-    statRow(c, d.stats, 76, mapH+370, 316, "#6D6D78", "#242428", 32, 74, 290);
-    c.fillStyle = "#ECECF0"; c.fillRect(76, mapH+500, CW-152, 3);
-    c.fillStyle = "#6D6D78"; c.font = MID(32); c.fillText(d.extra, 76, mapH+570);
-    wordmark(c, 76, CH-70, OR, 46);
-    c.fillStyle = "#9A9AA5"; c.font = MID(28); c.textAlign = "right"; c.fillText("Masche für Masche", CW-76, CH-74); c.textAlign = "left";
-  }
-  if(kind==="foto"){
-    if(photo){ const s = Math.max(CW/photo.width, CH/photo.height), w = photo.width*s, h = photo.height*s; c.drawImage(photo, (CW-w)/2, (CH-h)/2, w, h); }
-    else { mapBackground(c, 0, 0, CW, CH);
-      if(preview){ c.fillStyle = "rgba(36,36,40,.55)"; rr(c, 290, 560, 500, 300, 40); c.fill();
-        c.fillStyle = "#fff"; c.textAlign = "center"; c.font = HEAVY(110); c.fillText("+", CW/2, 720); c.font = MID(40); c.fillText("Foto hinzufügen", CW/2, 805); c.textAlign = "left"; } }
-    const g = c.createLinearGradient(0, CH*0.45, 0, CH); g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(0.5,"rgba(0,0,0,.45)"); g.addColorStop(1,"rgba(0,0,0,.78)");
-    c.fillStyle = g; c.fillRect(0, CH*0.45, CW, CH*0.55);
-    drawRoute(c, p, st, {x:CW-430, y:1020, w:350, h:260}, {lw:8, casing:"rgba(255,255,255,.95)", fill:"rgba(255,255,255,.35)", ridge:"rgba(252,76,2,.55)", markers:true, ridges:40});
-    const t = fitTitle(c, p.name, s=>HEAVY(s), CW-152, 84, 54, 1);
-    c.fillStyle = "#fff"; c.font = HEAVY(t.size); c.fillText(t.lines[0], 76, 1440);
-    c.fillStyle = "rgba(255,255,255,.8)"; c.font = MID(32); c.fillText(d.meta, 76, 1494);
-    statRow(c, d.stats, 76, 1610, 316, "rgba(255,255,255,.75)", "#fff", 32, 76, 290);
-    wordmark(c, 76, CH-80, "#fff", 44);
+  const date = new Date(p.finished||Date.now()).toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"});
+  const verb = p.craft==="haekeln" ? "Gehäkelt" : "Gestrickt";
+  const tagLine = [`${verb} in ${d.days} ${d.days===1?"Tag":"Tagen"}`].concat(d.fav&&d.fav.ms?[`am liebsten ${d.fav.name.toLowerCase()}`]:[]).join(" · ");
+  const header = (fg)=>{ c.fillStyle = fg; c.font = BRICO(700, 34); c.fillText("LENA DEL YARN", 80, 112);
+    c.textAlign = "right"; c.font = BRICO(400, 34); c.fillText(date, W-80, 112); c.textAlign = "left"; };
+  const title = (fg, y, size)=>{ const t = fitTitle(c, p.name, s=>BRICO(700,s), W-160, size, 64, 2);
+    c.fillStyle = fg; c.font = BRICO(700, t.size); const lh = t.size*0.98;
+    const y0 = y - (t.lines.length-1)*lh; t.lines.forEach((l,i)=>c.fillText(l, 76, y0+i*lh)); return y0 - t.size; };
+  if(kind==="farbe" || kind==="foto"){
+    const onPhoto = kind==="foto";
+    const fg = onPhoto ? "#FFFFFF" : L.fg, sub = onPhoto ? "rgba(255,255,255,.8)" : L.sub;
+    if(onPhoto){
+      if(photo){ const s = Math.max(W/photo.width, H/photo.height), w = photo.width*s, h = photo.height*s; c.drawImage(photo, (W-w)/2, (H-h)/2, w, h); }
+      else { c.fillStyle = L.bg; c.fillRect(0,0,W,H);
+        if(preview){ c.fillStyle = "rgba(0,0,0,.25)"; rr(c, 290, H*0.3, 500, 280, 40); c.fill(); c.fillStyle = "#fff"; c.textAlign = "center";
+          c.font = BRICO(700,110); c.fillText("+", W/2, H*0.3+150); c.font = BRICO(400,40); c.fillText("Foto hinzufügen", W/2, H*0.3+225); c.textAlign = "left"; } }
+      const g = c.createLinearGradient(0, H*0.38, 0, H); g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(0.5,"rgba(0,0,0,.42)"); g.addColorStop(1,"rgba(0,0,0,.8)");
+      c.fillStyle = g; c.fillRect(0, H*0.38, W, H*0.62);
+      const tg = c.createLinearGradient(0,0,0,220); tg.addColorStop(0,"rgba(0,0,0,.42)"); tg.addColorStop(1,"rgba(0,0,0,0)"); c.fillStyle = tg; c.fillRect(0,0,W,220);
+    }else{
+      c.fillStyle = L.bg; c.fillRect(0,0,W,H);
+      if(L.tex) knitTexture(c, "#000000", 0.035, 52);
+      const glow = c.createRadialGradient(W*0.75, H*0.18, 0, W*0.75, H*0.18, W*0.9); glow.addColorStop(0, "rgba(255,255,255,.16)"); glow.addColorStop(1, "rgba(255,255,255,0)");
+      c.fillStyle = glow; c.fillRect(0,0,W,H);
+    }
+    header(fg);
+    const statY = H - (post ? 150 : 210);
+    const metaY = statY - (post ? 110 : 140);
+    const titleBase = metaY - (post ? 62 : 74);
+    c.fillStyle = sub; c.font = BRICO(400, post?34:38); c.fillText(tagLine, 80, metaY);
+    const titleTop = title(fg, titleBase, post ? 112 : 132);
+    const route = L.route && !onPhoto ? L.route : fg;
+    const rb = onPhoto ? {x:W-460, y:titleTop-360, w:380, h:300}
+                       : {x:120, y:(post?200:240), w:W-240, h:titleTop-(post?200:240)-90};
+    drawRoute(c, p, st, rb, {lw: onPhoto?9:12, line:route, fill:hexA(route.startsWith("#")?route:"#FFFFFF", onPhoto?0.28:0.16),
+      ridge:hexA(route.startsWith("#")?route:"#FFFFFF", 0.4), casing: onPhoto ? "rgba(0,0,0,.25)" : null,
+      markers:true, labels:!onPhoto, pillBg:fg, pillFg: onPhoto ? "#141414" : L.bg, ridges: onPhoto?40:75});
+    statRow(c, d.stats, 80, statY, 318, sub, fg, post?32:36, post?84:100, 295);
   }
   if(kind==="sticker"){
-    c.save(); c.shadowColor = "rgba(0,0,0,.28)"; c.shadowBlur = 14; c.shadowOffsetY = 2;
-    c.textAlign = "center";
+    const col = look.color==="creme" ? "#FFFFFF" : (LOOKS[look.color]||LOOKS.orange).bg;
+    const light = look.color!=="nacht";
+    c.save(); if(light){ c.shadowColor = "rgba(0,0,0,.3)"; c.shadowBlur = 16; c.shadowOffsetY = 2; }
+    c.textAlign = "center"; c.fillStyle = col;
     d.stats.forEach((s,i)=>{ const y = 470 + i*250;
-      c.fillStyle = "#fff"; c.font = MID(44); c.fillText(s[0], CW/2, y);
-      let fs = 140; c.font = HEAVY(fs); while(c.measureText(s[1]).width > CW-160 && fs>70){ fs -= 4; c.font = HEAVY(fs); }
-      c.fillText(s[1], CW/2, y+142); });
+      c.font = BRICO(400, 44); c.fillText(s[0], W/2, y);
+      let fs = 150; c.font = BRICO(700, fs); while(c.measureText(s[1]).width > W-160 && fs>70){ fs -= 4; c.font = BRICO(700, fs); }
+      c.fillText(s[1], W/2, y+146); });
     c.restore();
-    drawRoute(c, p, st, {x:200, y:1230, w:CW-400, h:340}, {lw:11, casing:"#fff", fill:"rgba(255,255,255,.35)", ridge:"rgba(252,76,2,.6)", markers:true, ridges:55});
-    c.save(); c.shadowColor = "rgba(0,0,0,.28)"; c.shadowBlur = 14; wordmark(c, CW/2, 1690, "#fff", 50, "center"); c.restore();
+    drawRoute(c, p, st, {x:200, y:1230, w:W-400, h:330}, {lw:11, line:col, fill:hexA(col, .22), ridge:hexA(col, .5), markers:true, ridges:55});
+    c.save(); if(light){ c.shadowColor = "rgba(0,0,0,.3)"; c.shadowBlur = 14; }
+    c.fillStyle = col; c.font = BRICO(700, 46); c.textAlign = "center"; c.fillText("LENA DEL YARN", W/2, 1700); c.restore();
   }
   return cv;
 }
 function loadImg(src){ return new Promise((res,rej)=>{ const im = new Image(); im.onload = ()=>res(im); im.onerror = rej; im.src = src; }); }
 
-const CARDS = [["karte","Karte"],["foto","Foto"],["sticker","Sticker"]];
+const CARDS = [["farbe","Farbe"],["foto","Foto"],["sticker","Sticker · nur Story"]];
 async function showStats(p){
   const st = projStats(p);
   const free = p.mode==="free";
@@ -1467,14 +1505,17 @@ async function showStats(p){
     <b>${fin?"Dein Recap":"Zwischenstand"}</b><span style="width:38px"></span></div>
   <div class="stx-body">
     <div class="stage">
-      <div class="car">${CARDS.map(([k,l])=>`<figure class="slide ${k}" data-k="${k}"><div class="frame"></div><figcaption>${l}</figcaption></figure>`).join("")}</div>
+      <div class="shd"><h2>${fin ? (p.craft==="haekeln"?"Fertig gehäkelt!":"Fertig gestrickt!") : "Zwischenstand"}</h2><p>${esc(p.name)} · ${fmtNum(st.D)} ${Us}${st.enough?` · ${hm(st.total)}`:""}</p></div>
+      <div class="fmt" role="group" aria-label="Format"><button data-fmt="story">Story 9:16</button><button data-fmt="post">Beitrag 4:5</button></div>
+      <div class="car"><span class="cpad"></span>${CARDS.map(([k,l])=>`<figure class="slide ${k}" data-k="${k}"><div class="frame"></div><figcaption>${l}</figcaption></figure>`).join("")}<span class="cpad"></span></div>
       <div class="cdots">${CARDS.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>
+      <div class="sw" role="group" aria-label="Farbe">${Object.entries(LOOKS).map(([k,v])=>`<button data-col="${k}" style="--c:${v.bg}" aria-label="${v.name}"></button>`).join("")}</div>
       <div class="sact">
         <button class="sbtn ghost" data-photo>${p.photo?"Foto ändern":"Foto wählen"}</button>
         <button class="sbtn" data-share><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>Teilen</button>
       </div>
       <input type="file" accept="image/*" hidden data-file>
-      <p class="stip">Tipp: Der Sticker ist durchsichtig – perfekt über ein eigenes Foto in deiner Story.</p>
+      <p class="stip">Teilen öffnet das iPhone-Menü – dort Instagram antippen und Story oder Beitrag wählen. Den Sticker legst du in der Story über ein eigenes Foto.</p>
     </div>
     <div class="sheet2">
       ${st.enough ? "" : `<div class="stx-note">Die Zeitmessung läuft seit ${st.since?fmtDate(st.since):"jetzt"}. Nach ein paar gezählten ${Us} kommt hier deine Strickzeit dazu.</div>`}
@@ -1514,16 +1555,27 @@ async function showStats(p){
 
   let photo = null;
   if(p.photo){ try{ photo = await loadImg(p.photo); }catch(e){ photo = null; } }
-  const canv = {};
+  await fontsReady;
+  const look = Object.assign({color:"orange", fmt:"story"}, p.recapLook||{});
+  const car = box.querySelector(".car"), dots = [...box.querySelectorAll(".cdots i")];
   const paint = ()=>{
-    CARDS.forEach(([k])=>{ const cv = drawCard(k, p, st, photo, true); canv[k] = cv;
+    car.classList.toggle("post", look.fmt==="post");
+    box.querySelectorAll("[data-fmt]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.fmt===look.fmt));
+    box.querySelectorAll("[data-col]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.col===look.color));
+    CARDS.forEach(([k])=>{ const cv = drawCard(k, p, st, photo, true, look);
       const fr = box.querySelector(`.slide[data-k="${k}"] .frame`); fr.innerHTML = ""; fr.appendChild(cv); });
     const sl = box.querySelector(".slide.sticker .frame");
-    sl.style.backgroundImage = p.photo ? `linear-gradient(rgba(0,0,0,.15),rgba(0,0,0,.15)), url(${p.photo})` : "";
+    sl.style.backgroundImage = p.photo ? `linear-gradient(rgba(0,0,0,.12),rgba(0,0,0,.12)), url(${p.photo})` : "";
+    sl.style.backgroundColor = look.color==="nacht" ? "#E9E6DF" : "";
   };
   paint();
-  const car = box.querySelector(".car"), dots = [...box.querySelectorAll(".cdots i")];
-  const curIdx = ()=>{ const w = car.firstElementChild.getBoundingClientRect().width + 14; return Math.max(0, Math.min(CARDS.length-1, Math.round(car.scrollLeft / w))); };
+  const setLook = (k,v)=>{ look[k] = v; p.recapLook = Object.assign({}, look); save(); paint(); };
+  box.querySelectorAll("[data-fmt]").forEach(b=>b.onclick = ()=>setLook("fmt", b.dataset.fmt));
+  box.querySelectorAll("[data-col]").forEach(b=>b.onclick = ()=>setLook("color", b.dataset.col));
+  const slideW = ()=>box.querySelector(".slide").getBoundingClientRect().width + 14;
+  const pads = ()=>{ const w = Math.max(0, (car.clientWidth - slideW() + 14)/2 - 14); car.querySelectorAll(".cpad").forEach(x=>x.style.width = w+"px"); };
+  pads(); window.addEventListener("resize", pads);
+  const curIdx = ()=>Math.max(0, Math.min(CARDS.length-1, Math.round(car.scrollLeft / slideW())));
   car.addEventListener("scroll", ()=>{ const i = curIdx(); dots.forEach((x,j)=>x.classList.toggle("on", i===j)); }, {passive:true});
   box.querySelectorAll(".slide").forEach((s,i)=>s.addEventListener("click", ()=>{ if(CARDS[i][0]==="foto" && !p.photo) box.querySelector("[data-file]").click(); }));
   const file = box.querySelector("[data-file]");
@@ -1538,16 +1590,16 @@ async function showStats(p){
       p.photo = cv.toDataURL("image/jpeg", 0.82); save();
       photo = await loadImg(p.photo); paint();
       box.querySelector("[data-photo]").textContent = "Foto ändern";
-      const fi = CARDS.findIndex(x=>x[0]==="foto"); car.scrollTo({left: fi*(car.firstElementChild.getBoundingClientRect().width+14), behavior:"smooth"});
+      const fi = CARDS.findIndex(x=>x[0]==="foto"); car.scrollTo({left: fi*slideW(), behavior:"smooth"});
     }catch(e){ toast("Foto konnte nicht geladen werden"); }
     file.value = "";
   };
   box.querySelector("[data-share]").onclick = ()=>{
     const [k] = CARDS[curIdx()];
-    const cv = drawCard(k, p, st, photo, false);
+    const cv = drawCard(k, p, st, photo, false, look);
     cv.toBlob(async blob=>{
       if(!blob) return toast("Bild konnte nicht erstellt werden");
-      const f = new File([blob], `${slug(p.name)}-${k}.png`, {type:"image/png"});
+      const f = new File([blob], `${slug(p.name)}-${k}-${k==="sticker"?"story":look.fmt}.png`, {type:"image/png"});
       try{ if(navigator.canShare && navigator.canShare({files:[f]})){ await navigator.share({files:[f]}); return; } }
       catch(e){ if(e && e.name==="AbortError") return; }
       const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = f.name;

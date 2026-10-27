@@ -385,7 +385,7 @@ body.fixed .undo button{padding:11px 0}
 
 <script>
 "use strict";
-const VERSION = "2.1";
+const VERSION = "2.1.1";
 const KEY = "lena-handarbeit";
 const BACKUP_DAYS = 14;
 const DAY = 86400000;
@@ -994,9 +994,9 @@ function infoBody(p){
     <div class="field"><label for="f-gauge">Maschenprobe</label><input id="f-gauge" value="${esc(m.gauge||"")}" placeholder="z. B. 22 M x 30 R = 10 cm"></div>
     <div class="field"><label for="f-notes">Notizen</label><textarea id="f-notes" placeholder="Was du beim nächsten Mal anders machen würdest …">${esc(m.notes||"")}</textarea></div>
     <button class="btn" data-savemeta>Speichern</button>
-    <button class="statcard" data-showstats style="margin-top:18px"><span class="sci"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V10M10 19V5M16 19v-7M22 19H2"/></svg></span>
-      <div><b>Recap & Teilen</b><span>${(()=>{ const s = projStats(p); return s.enough ? `Bisher ${fmtDur(s.total, s.est>0)} Strickzeit` : "Zeitmessung läuft – nach ein paar "+(p.mode==="free"?"Zählungen":unitsOf(p))+" geht's los"; })()}</span></div></button>
-    <div class="note"><h3>Projekt</h3>
+    ${p.status==="fertig" ? `<button class="statcard" data-showstats style="margin-top:18px"><span class="sci"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V10M10 19V5M16 19v-7M22 19H2"/></svg></span>
+      <div><b>Recap & Teilen</b><span>${(()=>{ const s = projStats(p); return s.enough ? `${fmtDur(s.total, s.est>0)} Strickzeit – jetzt teilen` : "Story-Karten zum Teilen"; })()}</span></div></button>` : ""}
+    <div class="note" style="margin-top:18px"><h3>Projekt</h3>
       <p>${p.mode==="free"?"Freies Zählen":`Größe ${esc(p.sizeLabel||"–")} · ${totalRows(p)} ${unitsOf(p)} insgesamt`}${p.designer?" · "+esc(p.designer):""}</p>
       <p>Begonnen am ${fmtDate(p.created)}${p.finished?` · fertig am ${fmtDate(p.finished)}`:""}</p></div>`;
 }
@@ -1014,13 +1014,13 @@ function projectMenu(p){
   sheet(`<h3>${esc(p.name)}</h3>
     <button class="opt" data-rename><b>Umbenennen</b><span>Name des Projekts ändern</span></button>
     <button class="opt" data-status><b>${p.status==="fertig"?"Wieder als laufend markieren":"Als fertig markieren"}</b><span>${p.status==="fertig"?"Taucht wieder oben in der Liste auf":"Rutscht in der Liste nach unten"}</span></button>
-    <button class="opt" data-stats><b>Recap & Teilen</b><span>Story-Karten, Highlights und alle Zahlen</span></button>
+    ${p.status==="fertig"?`<button class="opt" data-stats><b>Recap & Teilen</b><span>Story-Karten, Highlights und alle Zahlen</span></button>`:""}
     <button class="opt" data-reset><b>Zähler zurücksetzen</b><span>Alles wieder auf Anfang</span></button>
     <button class="btn ghost danger" data-delete>Projekt löschen</button>
     <button class="btn ghost" data-close>Schließen</button>`, el=>{
     el.querySelector("[data-rename]").onclick=()=>{ closeSheet(); textSheet("Umbenennen","Name",p.name,v=>{ p.name=v; p.updated=Date.now(); save(); renderProject(); }); };
     el.querySelector("[data-status]").onclick=()=>{ const f = p.status!=="fertig"; p.status = f?"fertig":"laufend"; p.finished = f?Date.now():null; p.updated=Date.now(); save(); closeSheet(); renderProject(); if(f) celebrate(p); };
-    el.querySelector("[data-stats]").onclick=()=>{ closeSheet(); showStats(p); };
+    const stb = el.querySelector("[data-stats]"); if(stb) stb.onclick=()=>{ closeSheet(); showStats(p); };
     el.querySelector("[data-reset]").onclick=()=>{ closeSheet(); confirmSheet("Zähler zurücksetzen?", "Alle Zählerstände dieses Projekts gehen auf null.", "Zurücksetzen", ()=>{
       p.parts.forEach(pt=>{ pt.row=0; (pt.aux||[]).forEach(a=>a.value=0); }); (p.counters||[]).forEach(c=>c.value=0); p.log=[];
       p.status="laufend"; p.finished=null; p.updated=Date.now(); save(); toast("Zurückgesetzt"); renderProject(); }); };

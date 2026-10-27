@@ -205,6 +205,69 @@ body.fixed .undo button{padding:11px 0}
 .dock .total{margin-top:8px}
 @media (max-height:720px){ .cmain .lastdone{display:none} .cmain .instr p{font-size:16.5px;margin-top:8px} .cmain .instr{padding:15px 16px 14px} .cmain .section-name{margin-bottom:6px} }
 @media (max-height:620px){ body.fixed .plus{padding:14px 0 11px} body.fixed .plus .sign{font-size:34px} .dstats{margin-bottom:7px} }
+/* Bilanz */
+.stx{--or:#FC4C02;--sink:#242428;--sgr:#6D6D78;--sline:#ECECF0;position:fixed;inset:0;z-index:70;background:#fff;color:var(--sink);
+  display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);animation:fadein .2s ease both}
+.stx-bar{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--sline);flex:none}
+.stx-bar b{flex:1;text-align:center;font-size:17px;font-weight:700;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+.stx-bar .icon-btn{color:var(--sink)}
+.stx-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 18px calc(30px + env(safe-area-inset-bottom,0px));max-width:560px;margin:0 auto;width:100%}
+.who{display:flex;gap:12px;align-items:center}
+.ava{width:44px;height:44px;border-radius:50%;background:var(--or);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;flex:none}
+.who b{display:block;font-size:15.5px}
+.who div span{font-size:13px;color:var(--sgr)}
+.stx-title{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-weight:800;font-size:26px;letter-spacing:-.02em;margin:14px 0 14px}
+.sgrid{display:grid;grid-template-columns:repeat(3,1fr);row-gap:16px;column-gap:10px;padding:2px 0 18px;border-bottom:1px solid var(--sline)}
+.sgrid span{display:block;font-size:12.5px;color:var(--sgr);margin-bottom:2px}
+.sgrid b{font-size:22px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sgrid small{font-size:13px;font-weight:600;color:var(--sgr)}
+.stx-note{background:#FFF3EC;color:#8A3A12;border-radius:12px;padding:10px 12px;font-size:13.5px;margin:14px 0 4px}
+.goal{margin:16px 0 4px;padding:14px;border:1px solid var(--sline);border-radius:14px}
+.goal-top{display:flex;align-items:baseline;gap:10px;margin-bottom:8px}
+.goal-top b{font-size:24px;font-weight:800;color:var(--or)}
+.goal-top span{font-size:13.5px;color:var(--sgr)}
+.gtrack{height:8px;border-radius:4px;background:var(--sline);overflow:hidden}
+.gtrack i{display:block;height:100%;background:var(--or);border-radius:4px}
+.goal p{margin:10px 0 0;font-size:14px;color:var(--sink)}
+.sh{font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-weight:800;font-size:17px;margin:24px 0 10px}
+.profw{border-bottom:1px solid var(--sline);padding-bottom:12px}
+.prof{display:block;width:100%;height:110px}
+.paxis{display:flex;justify-content:space-between;font-size:11.5px;color:var(--sgr);margin-top:4px}
+.splits{font-size:14px}
+.srow{display:grid;grid-template-columns:1.5fr 1.2fr .9fr;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--sline)}
+.srow>span:last-child{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.srow small{display:block;font-size:11.5px;color:var(--sgr);font-weight:400}
+.shead{font-size:12px;color:var(--sgr);padding-top:0}
+.shead>span:last-child{font-weight:400}
+.srow.todo{color:var(--sgr)}
+.pbar{position:relative;height:22px;display:flex;align-items:center}
+.pbar i{position:absolute;left:0;top:0;bottom:0;background:#FFE2D4;border-radius:4px}
+.pbar em{position:relative;font-style:normal;font-weight:600;padding-left:6px;font-variant-numeric:tabular-nums}
+.badges{display:grid;gap:10px}
+.bdg{display:flex;gap:12px;align-items:center}
+.bdg b{display:block;font-size:14.5px}
+.bdg span{font-size:12.5px;color:var(--sgr)}
+.tod{display:grid;gap:7px}
+.trow{display:grid;grid-template-columns:92px 1fr 84px;gap:10px;align-items:center;font-size:13.5px}
+.trow>span:last-child{text-align:right;color:var(--sgr);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbar{height:10px;background:var(--sline);border-radius:5px;overflow:hidden}
+.tbar i{display:block;height:100%;background:#FFB894;border-radius:5px}
+.trow.fav .tbar i{background:var(--or)}
+.trow.fav>span:first-child{font-weight:700}
+.wk7{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:16px;height:86px}
+.wk7>div{display:flex;flex-direction:column;align-items:center;gap:4px}
+.wb{flex:1;width:100%;max-width:26px;background:var(--sline);border-radius:6px;display:flex;align-items:flex-end;overflow:hidden}
+.wb i{display:block;width:100%;background:var(--or);border-radius:6px}
+.wk7 small{font-size:11.5px;color:var(--sgr)}
+.tea{margin-top:20px;background:#F7F7FA;border-radius:12px;padding:12px 14px;font-size:14px}
+.kudos{display:flex;align-items:center;gap:10px;margin-top:18px;padding-top:14px;border-top:1px solid var(--sline);font-size:14px}
+.kava{width:34px;height:34px;border-radius:9px;overflow:hidden;flex:none}
+.kava svg{width:34px;height:34px;display:block}
+.stx-foot{font-size:12px;color:var(--sgr);margin:14px 0 0}
+.statcard{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:12px}
+.statcard .sci{width:38px;height:38px;border-radius:11px;background:#FC4C02;color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
+.statcard b{display:block;font-size:15px}
+.statcard span{font-size:13px;color:var(--muted)}
 /* Freie Zähler */
 .counter{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
 .counter .chead{display:flex;align-items:center;gap:8px;margin-bottom:10px}
@@ -287,7 +350,7 @@ body.fixed .undo button{padding:11px 0}
 
 <script>
 "use strict";
-const VERSION = "1.9";
+const VERSION = "2.0";
 const KEY = "lena-handarbeit";
 const BACKUP_DAYS = 14;
 const DAY = 86400000;
@@ -605,7 +668,7 @@ function counterBody(p){
         <p>${allDone ? `${totalRows(p)} ${Us} ${daysText(p)}. Jetzt nur noch die Fäden vernähen.` : `Weiter mit „${esc(p.parts[next].name)}“.`}</p>
         ${!allDone?`<button class="btn" data-nextpart="${next}">Zu „${esc(p.parts[next].name)}“</button>`:""}
         ${allDone && p.status!=="fertig"?`<button class="btn" data-complete>Projekt abschließen</button>`:""}
-        ${allDone && p.status==="fertig"?`<button class="btn ghost" data-replay>Nochmal feiern 🎉</button>`:""}
+        ${allDone && p.status==="fertig"?`<button class="btn" data-showstats>Bilanz ansehen</button><button class="btn ghost" data-replay>Nochmal feiern 🎉</button>`:""}
       </div>
       ${extras}</div>
       <div class="dock"><div class="undo"><button data-minus>− Zurück</button><button data-jump>Springen</button></div></div>`;
@@ -673,14 +736,16 @@ function wireCounter(p){
     if(gap < 450) return;                // Doppeltipp abfangen
     lastPlus = now;
     const before = part.row||0;
-    part.row = Math.min(before+1, rows.length); touchRow();
-    if(gap < 2500) toast(`${U} ${before+1} gezählt`, "Rückgängig", ()=>{ part.row = before; touchRow(); });
+    if(before >= rows.length) return;
+    part.row = before+1; logRow(p, idx, part.row); touchRow();
+    if(gap < 2500) toast(`${U} ${before+1} gezählt`, "Rückgängig", ()=>{ if(part.row!==before+1) return; part.row = before; unlogRow(p, idx, before); touchRow(); });
   };
-  app.querySelectorAll("[data-minus]").forEach(b=>b.onclick = ()=>{ part.row = Math.max((part.row||0)-1, 0); touchRow(); });
+  app.querySelectorAll("[data-minus]").forEach(b=>b.onclick = ()=>{ if(!(part.row>0)) return; part.row--; unlogRow(p, idx, part.row); touchRow(); });
   app.querySelectorAll("[data-jump]").forEach(b=>b.onclick = ()=>jumpSheet(p, idx));
   const np = app.querySelector("[data-nextpart]"); if(np) np.onclick = ()=>{ view.partIdx = +np.dataset.nextpart; view._resetScroll = true; renderProject(); };
   const comp = app.querySelector("[data-complete]"); if(comp) comp.onclick = ()=>touch();
   const rep = app.querySelector("[data-replay]"); if(rep) rep.onclick = ()=>celebrate(p);
+  const shs = app.querySelector("[data-showstats]"); if(shs) shs.onclick = ()=>showStats(p);
   wireExtras(p, part, touch);
 }
 function wireExtras(p, part, touch){
@@ -757,7 +822,7 @@ function jumpSheet(p, idx){
     <p class="sub" style="margin:18px 0 8px">Oder an den Anfang eines Abschnitts</p>
     ${secs.map(s=>`<button class="opt" data-sec="${s.start}"><b>${esc(s.name)}</b><span>ab ${U} ${s.start+1}</span></button>`).join("")}
     <button class="btn ghost" data-close>Abbrechen</button>`, el=>{
-    const set = v=>{ part.row = Math.max(0, Math.min(rows.length, v)); view._resetScroll = true; const fin = syncStatus(p); p.updated=Date.now(); save(); closeSheet(); renderProject();
+    const set = v=>{ part.row = Math.max(0, Math.min(rows.length, v)); logRow(p, idx, part.row, true); view._resetScroll = true; const fin = syncStatus(p); p.updated=Date.now(); save(); closeSheet(); renderProject();
       if(fin) celebrate(p); else toast(`Weiter bei ${U} ${Math.min(part.row+1, rows.length)}`); };
     el.querySelector("[data-ok]").onclick = ()=>set(parseInt(el.querySelector("#jr").value||"0",10));
     el.querySelectorAll("[data-sec]").forEach(b=>b.onclick=()=>set(+b.dataset.sec));
@@ -816,8 +881,8 @@ function wireFree(p){
   const touch = ()=>{ p.updated=Date.now(); save(); renderProject(); };
   app.querySelectorAll("[data-cplus]").forEach(b=>b.onclick=()=>{
     const now=Date.now(); if(now-lastPlus<450) return; lastPlus=now;
-    const c=p.counters[+b.dataset.cplus]; c.value=(c.value||0)+1; touch(); });
-  app.querySelectorAll("[data-cminus]").forEach(b=>b.onclick=()=>{ const c=p.counters[+b.dataset.cminus]; c.value=Math.max(0,(c.value||0)-1); touch(); });
+    const c=p.counters[+b.dataset.cplus]; c.value=(c.value||0)+1; logRow(p, -1, c.value); touch(); });
+  app.querySelectorAll("[data-cminus]").forEach(b=>b.onclick=()=>{ const c=p.counters[+b.dataset.cminus]; if(!(c.value>0)) return; c.value--; unlogRow(p, -1, c.value); touch(); });
   app.querySelectorAll("[data-cedit]").forEach(b=>b.onclick=()=>counterSheet(p, +b.dataset.cedit));
   app.querySelectorAll("[data-addc]").forEach(b=>b.onclick=()=>counterSheet(p, null));
 }
@@ -894,11 +959,14 @@ function infoBody(p){
     <div class="field"><label for="f-gauge">Maschenprobe</label><input id="f-gauge" value="${esc(m.gauge||"")}" placeholder="z. B. 22 M x 30 R = 10 cm"></div>
     <div class="field"><label for="f-notes">Notizen</label><textarea id="f-notes" placeholder="Was du beim nächsten Mal anders machen würdest …">${esc(m.notes||"")}</textarea></div>
     <button class="btn" data-savemeta>Speichern</button>
-    <div class="note" style="margin-top:18px"><h3>Projekt</h3>
+    <button class="statcard" data-showstats style="margin-top:18px"><span class="sci"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V10M10 19V5M16 19v-7M22 19H2"/></svg></span>
+      <div><b>Bilanz ansehen</b><span>${(()=>{ const s = projStats(p); return s.enough ? `Bisher ${fmtDur(s.total, s.est>0)} Strickzeit` : "Zeitmessung läuft – nach ein paar "+(p.mode==="free"?"Zählungen":unitsOf(p))+" geht's los"; })()}</span></div></button>
+    <div class="note"><h3>Projekt</h3>
       <p>${p.mode==="free"?"Freies Zählen":`Größe ${esc(p.sizeLabel||"–")} · ${totalRows(p)} ${unitsOf(p)} insgesamt`}${p.designer?" · "+esc(p.designer):""}</p>
       <p>Begonnen am ${fmtDate(p.created)}${p.finished?` · fertig am ${fmtDate(p.finished)}`:""}</p></div>`;
 }
 function wireInfo(p){
+  const shs = app.querySelector("[data-showstats]"); if(shs) shs.onclick = ()=>showStats(p);
   app.querySelector("[data-savemeta]").onclick = ()=>{
     p.meta = p.meta||{};
     [["yarn","#f-yarn"],["dyeLot","#f-lot"],["needle","#f-needle"],["gauge","#f-gauge"],["notes","#f-notes"]].forEach(([k,s])=>p.meta[k]=app.querySelector(s).value);
@@ -911,17 +979,261 @@ function projectMenu(p){
   sheet(`<h3>${esc(p.name)}</h3>
     <button class="opt" data-rename><b>Umbenennen</b><span>Name des Projekts ändern</span></button>
     <button class="opt" data-status><b>${p.status==="fertig"?"Wieder als laufend markieren":"Als fertig markieren"}</b><span>${p.status==="fertig"?"Taucht wieder oben in der Liste auf":"Rutscht in der Liste nach unten"}</span></button>
+    <button class="opt" data-stats><b>Bilanz ansehen</b><span>Strickzeit, Tempo, Erfolge und Hochrechnung</span></button>
     <button class="opt" data-reset><b>Zähler zurücksetzen</b><span>Alles wieder auf Anfang</span></button>
     <button class="btn ghost danger" data-delete>Projekt löschen</button>
     <button class="btn ghost" data-close>Schließen</button>`, el=>{
     el.querySelector("[data-rename]").onclick=()=>{ closeSheet(); textSheet("Umbenennen","Name",p.name,v=>{ p.name=v; p.updated=Date.now(); save(); renderProject(); }); };
     el.querySelector("[data-status]").onclick=()=>{ const f = p.status!=="fertig"; p.status = f?"fertig":"laufend"; p.finished = f?Date.now():null; p.updated=Date.now(); save(); closeSheet(); renderProject(); if(f) celebrate(p); };
+    el.querySelector("[data-stats]").onclick=()=>{ closeSheet(); showStats(p); };
     el.querySelector("[data-reset]").onclick=()=>{ closeSheet(); confirmSheet("Zähler zurücksetzen?", "Alle Zählerstände dieses Projekts gehen auf null.", "Zurücksetzen", ()=>{
-      p.parts.forEach(pt=>{ pt.row=0; (pt.aux||[]).forEach(a=>a.value=0); }); (p.counters||[]).forEach(c=>c.value=0);
+      p.parts.forEach(pt=>{ pt.row=0; (pt.aux||[]).forEach(a=>a.value=0); }); (p.counters||[]).forEach(c=>c.value=0); p.log=[];
       p.status="laufend"; p.finished=null; p.updated=Date.now(); save(); toast("Zurückgesetzt"); renderProject(); }); };
     el.querySelector("[data-delete]").onclick=()=>{ closeSheet(); confirmSheet("Projekt löschen?", "Der Zählerstand geht dabei verloren. Das lässt sich nicht rückgängig machen.", "Löschen", ()=>{
       state.projects = state.projects.filter(x=>x.id!==p.id); save(); view.name="list"; render(); toast("Gelöscht"); }); };
   });
+}
+
+/* ============ Zeitmessung & Bilanz ============ */
+const GAP = 25*60e3;               // längere Pausen zählen nicht als Strickzeit
+function doneCount(p){ return p.mode==="free" ? (p.counters||[]).reduce((s,c)=>s+(c.value||0),0) : doneRows(p); }
+// Eintrag: [Zeit, erledigt gesamt, Sprung?, Teil, Reihe im Teil]
+function logRow(p, pi, r, jump){
+  p.log = p.log||[];
+  p.log.push([Date.now(), doneCount(p), jump?1:0, pi, r]);
+  if(p.log.length>5000) p.log.splice(0, p.log.length-5000);
+}
+function unlogRow(p, pi, r){
+  const L = p.log||[], last = L[L.length-1];
+  if(last && !last[2] && last[1]===doneCount(p)+1) L.pop(); else logRow(p, pi, r, true);
+}
+function median(a){ if(!a.length) return 0; const s=a.slice().sort((x,y)=>x-y), m=s.length>>1; return s.length%2?s[m]:(s[m-1]+s[m])/2; }
+function fmtDur(ms, approx){
+  const m = Math.round(ms/60000), pre = approx?"~":"";
+  if(m<1) return pre+"<1 min";
+  if(m<60) return pre+m+" min";
+  const h = Math.floor(m/60), r = m%60;
+  return pre+h+" h"+(r?" "+r+" min":"");
+}
+function fmtPace(ms){ const s = Math.round(ms/1000); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+function fmtShort(t){ return new Date(t).toLocaleDateString("de-DE",{day:"numeric",month:"short"}); }
+function fmtNum(n){ return Number(n).toLocaleString("de-DE"); }
+
+function projStats(p){
+  const L = (p.log||[]).filter(Array.isArray).slice().sort((a,b)=>a[0]-b[0]);
+  const durs = [], sessions = [];
+  let s = null, prev = null;
+  for(const e of L){
+    const cont = prev && e[0]-prev[0] < GAP;
+    if(!cont){ s = {start:e[0], end:e[0], rows:0, dur:0, open:0, opens:[]}; sessions.push(s); }
+    if(!e[2]){
+      s.rows++;
+      if(cont && e[1]===prev[1]+1){ const d = e[0]-prev[0]; durs.push({d, t:e[0], pi:e[3], r:e[4]}); s.dur += d; }
+      else { s.open++; s.opens.push(e); }
+    }
+    s.end = e[0]; prev = e;
+  }
+  const sess = sessions.filter(x=>x.rows>0);
+  const med = median(durs.map(x=>x.d));
+  const enough = durs.length>=3;
+  const timedRows = sess.reduce((a,x)=>a+x.rows,0);
+  const D = doneCount(p);
+  const est = Math.max(0, D - timedRows);
+  const measured = sess.reduce((a,x)=>a+x.dur+x.open*med,0);
+  const total = measured + est*med;
+  const T = p.mode==="free" ? 0 : totalRows(p);
+  const remaining = Math.max(0, T - D);
+  // Tempo pro Kalendertag seit Beginn der Messung
+  let eta = null;
+  if(enough && remaining>0 && L.length){
+    const days = Math.max(1, (Date.now()-L[0][0])/DAY);
+    const perDay = timedRows/days;
+    if(perDay>0) eta = Date.now() + remaining/perDay*DAY;
+  }
+  // Verteilung
+  const tod = [["Morgens",5,11],["Mittags",11,15],["Nachmittags",15,18],["Abends",18,22],["Nachts",22,29]].map(x=>({name:x[0],a:x[1],b:x[2],ms:0}));
+  const wd = Array(7).fill(0);
+  const addTime = (t, ms)=>{ const d = new Date(t), h = d.getHours(), hh = h<5?h+24:h;
+    const b = tod.find(x=>hh>=x.a && hh<x.b); if(b) b.ms += ms; wd[(d.getDay()+6)%7] += ms; };
+  durs.forEach(x=>addTime(x.t, x.d));
+  sess.forEach(x=>x.opens.forEach(e=>addTime(e[0], med)));
+  // Bestleistungen
+  const real = durs.filter(x=>x.d>=15000);
+  const fastest = real.length ? real.reduce((a,b)=>b.d<a.d?b:a) : null;
+  const longest = sess.length ? sess.reduce((a,b)=>(b.dur+b.open*med)>(a.dur+a.open*med)?b:a) : null;
+  const byDay = {};
+  L.filter(e=>!e[2]).forEach(e=>{ const k = new Date(e[0]).toDateString(); byDay[k] = (byDay[k]||0)+1; });
+  const bestDayKey = Object.keys(byDay).sort((a,b)=>byDay[b]-byDay[a])[0];
+  const hours = L.filter(e=>!e[2]).map(e=>new Date(e[0]).getHours());
+  const night = hours.some(h=>h>=22||h<4), early = hours.some(h=>h>=4&&h<8);
+  // Abschnitte
+  const splits = [];
+  if(p.mode!=="free"){
+    const timed = {}; durs.forEach(x=>{ timed[x.pi+":"+x.r] = x.d; });
+    p.parts.forEach((pt,pi)=>{
+      const rows = projectRows(p,pi), doneHere = pt.row||0;
+      let i = 0;
+      while(i<rows.length){
+        const si = rows[i].sectionIdx, start = i;
+        while(i<rows.length && rows[i].sectionIdx===si) i++;
+        const end = i;                                  // exklusiv
+        const doneSec = Math.max(0, Math.min(doneHere, end)-start);
+        const ds = []; for(let r=start+1; r<=start+doneSec; r++){ const v = timed[pi+":"+r]; if(v!=null) ds.push(v); }
+        const secMed = ds.length>=2 ? median(ds) : med;
+        const time = ds.reduce((a,b)=>a+b,0) + (doneSec-ds.length)*secMed;
+        splits.push({name:(p.parts.length>1?pt.name+" · ":"")+rows[start].sectionName, rows:end-start, done:doneSec,
+          time, pace:secMed, approx:doneSec>ds.length, measured:ds.length});
+      }
+    });
+  }
+  // Maschen
+  let stitches = 0, profile = [], pos = 0;
+  if(p.mode!=="free"){
+    p.parts.forEach((pt,pi)=>{ const rows = projectRows(p,pi);
+      rows.forEach((r,ri)=>{ profile.push(r.stitches); if(ri<(pt.row||0)) stitches += r.stitches; });
+      pos += Math.min(pt.row||0, rows.length); });
+  }
+  return {L, durs, sess, med, enough, timedRows, D, est, total, T, remaining, eta, tod, wd, fastest, longest,
+    bestDay: bestDayKey ? {key:bestDayKey, rows:byDay[bestDayKey]} : null, night, early, splits, stitches, profile, pos,
+    since: L.length ? L[0][0] : null};
+}
+
+function medal(col){
+  return `<svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><path d="M10 2h5l3 9h-6zM24 2h-5l-3 9h6z" fill="${col}" opacity=".55"/>
+    <circle cx="17" cy="21" r="11" fill="${col}"/><circle cx="17" cy="21" r="7.5" fill="none" stroke="#fff" stroke-width="1.6" opacity=".7"/>
+    <path d="M17 15.8l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z" fill="#fff"/></svg>`;
+}
+function profileSvg(st){
+  const P = st.profile; if(P.length<2) return "";
+  const W = 340, H = 110, max = Math.max(...P, 1), n = P.length;
+  const x = i => (i/(n-1))*W, y = v => H - 6 - (v/max)*(H-18);
+  const pts = P.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`);
+  const area = (a,b)=> `M${x(a)},${H} L${pts.slice(a,b+1).join(" L")} L${x(b)},${H} Z`;
+  const cut = Math.min(n-1, Math.max(0, st.pos-1));
+  const cx = x(cut), cy = y(P[cut]);
+  return `<svg class="prof" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="Maschenzahl über alle Reihen">
+    <path d="${area(0,n-1)}" fill="#E9E9EE"/>
+    ${st.pos>0?`<path d="${area(0,cut)}" fill="var(--or)" opacity=".9"/>`:""}
+    <polyline points="${pts.join(" ")}" fill="none" stroke="#B9B9C3" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+    ${st.pos>0 && st.pos<n?`<line x1="${cx}" y1="0" x2="${cx}" y2="${H}" stroke="var(--or)" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>`:""}
+  </svg>`;
+}
+
+function showStats(p){
+  const st = projStats(p);
+  const free = p.mode==="free";
+  const U = free ? "Zählung" : unitOf(p), Us = free ? "Zählungen" : unitsOf(p);
+  const fin = p.status==="fertig";
+  const days = Math.max(1, Math.floor(((p.finished||Date.now())-p.created)/DAY)+1);
+  const approx = st.est>0;
+  const tea = Math.round(st.total/(15*60e3));
+  const todMax = Math.max(1, ...st.tod.map(t=>t.ms));
+  const wdMax = Math.max(1, ...st.wd);
+  const fav = st.tod.slice().sort((a,b)=>b.ms-a.ms)[0];
+  const sub = fin ? `Fertig am ${fmtDate(p.finished)}` : `Läuft seit ${fmtDate(p.created)}`;
+  const pct = st.T ? Math.round(st.D/st.T*100) : 0;
+  const badges = [];
+  if(st.fastest) badges.push([`#F5B700`,`Schnellste ${U}`,`${fmtPace(st.fastest.d)} min am ${fmtShort(st.fastest.t)}`]);
+  if(st.longest && st.longest.rows>1) badges.push([`#B7BCC6`,`Längste Session`,`${fmtDur(st.longest.dur+st.longest.open*st.med)} · ${st.longest.rows} ${Us}`]);
+  if(st.bestDay && st.bestDay.rows>1) badges.push([`#D08B4F`,`Fleißigster Tag`,`${st.bestDay.rows} ${Us} am ${fmtShort(new Date(st.bestDay.key))}`]);
+  if(st.night) badges.push([`#6C5CE7`,`Nachteule`,`Nach 22 Uhr noch Maschen gemacht`]);
+  if(st.early) badges.push([`#2FB59A`,`Frühaufsteherin`,`Vor 8 Uhr schon an der Nadel`]);
+  const paces = st.splits.filter(x=>x.done).map(x=>x.pace||0), sMax = Math.max(1,...paces), sMin = Math.min(sMax,...paces);
+  const pw = v => sMax===sMin ? 70 : Math.round(35 + 65*(v-sMin)/(sMax-sMin));
+  const tt = document.getElementById("toast"); if(tt) tt.classList.remove("on");
+  const box = document.createElement("div");
+  box.className = "stx"; box.setAttribute("role","dialog"); box.setAttribute("aria-label","Bilanz");
+  box.innerHTML = `
+  <div class="stx-bar"><button class="back" data-sx aria-label="Schließen"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <b>Bilanz</b>
+    <button class="icon-btn" data-share aria-label="Als Bild teilen"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button></div>
+  <div class="stx-body">
+    <div class="who"><span class="ava">L</span><div><b>Lena</b><span>${sub} · ${p.craft==="haekeln"?"Häkeln":"Stricken"}</span></div></div>
+    <h2 class="stx-title">${esc(p.name)}</h2>
+    ${st.enough ? "" : `<div class="stx-note">Die Zeitmessung läuft seit ${st.since?fmtDate(st.since):"jetzt"}. Nach ein paar gezählten ${Us} rechnet die App deine Strickzeit hoch.</div>`}
+    <div class="sgrid">
+      <div><span>Strickzeit</span><b>${st.enough?fmtDur(st.total, approx):"–"}</b></div>
+      <div><span>${Us}</span><b>${fmtNum(st.D)}${st.T&&!fin?`<small> / ${fmtNum(st.T)}</small>`:""}</b></div>
+      <div><span>${free?"Tage":"Maschen"}</span><b>${free?days:fmtNum(st.stitches)}</b></div>
+      <div><span>Ø pro ${U}</span><b>${st.enough?fmtPace(st.med)+"<small> min</small>":"–"}</b></div>
+      <div><span>Sessions</span><b>${st.sess.length||"–"}</b></div>
+      <div><span>${free?"Pro Stunde":"Tage"}</span><b>${free?(st.enough?Math.round(3600000/st.med):"–"):days}</b></div>
+    </div>
+    ${approx && st.enough ? `<div class="stx-note">~ Hochrechnung: ${fmtNum(st.est)} ${Us} sind vor der Zeitmessung entstanden. Ihre Zeit ist mit deinem Ø-Tempo von ${fmtPace(st.med)} min geschätzt.</div>`:""}
+    ${!free && !fin ? `<div class="goal"><div class="goal-top"><b>${pct}%</b><span>noch ${fmtNum(st.remaining)} ${Us}${st.enough?` · ~${fmtDur(st.remaining*st.med).replace("~","")}`:""}</span></div>
+      <div class="gtrack"><i style="width:${pct}%"></i></div>
+      ${st.eta?`<p>Bei deinem bisherigen Tempo bist du um den <b>${fmtDate(st.eta)}</b> fertig.</p>`:""}</div>`:""}
+    ${!free?`<h3 class="sh">Maschenprofil</h3>
+      <div class="profw">${profileSvg(st)}<div class="paxis"><span>${U} 1</span><span>max. ${Math.max(...st.profile)} M</span><span>${U} ${st.profile.length}</span></div></div>`:""}
+    ${!free && st.splits.length?`<h3 class="sh">Abschnitte</h3>
+      <div class="splits"><div class="srow shead"><span>Abschnitt</span><span>Ø/${U}</span><span>Zeit</span></div>
+      ${st.splits.map(x=>`<div class="srow ${x.done?"":"todo"}"><span>${esc(x.name)}<small>${x.done}/${x.rows}</small></span>
+        <span class="pbar">${x.done&&st.enough?`<i style="width:${pw(x.pace)}%"></i><em>${fmtPace(x.pace)}</em>`:"–"}</span>
+        <span>${x.done&&st.enough?fmtDur(x.time, x.approx):"–"}</span></div>`).join("")}</div>`:""}
+    ${badges.length?`<h3 class="sh">Erfolge</h3><div class="badges">${badges.map(b=>`<div class="bdg">${medal(b[0])}<div><b>${b[1]}</b><span>${b[2]}</span></div></div>`).join("")}</div>`:""}
+    ${st.enough?`<h3 class="sh">Wann strickst du?</h3>
+      <div class="tod">${st.tod.map(t=>`<div class="trow ${t===fav&&t.ms?"fav":""}"><span>${t.name}</span><span class="tbar"><i style="width:${Math.round(t.ms/todMax*100)}%"></i></span><span>${t.ms?fmtDur(t.ms):"–"}</span></div>`).join("")}</div>
+      <div class="wk7">${["Mo","Di","Mi","Do","Fr","Sa","So"].map((d,i)=>`<div><span class="wb"><i style="height:${Math.round(st.wd[i]/wdMax*100)}%"></i></span><small>${d}</small></div>`).join("")}</div>`:""}
+    ${st.enough && tea>0?`<div class="tea">☕ Das sind ungefähr <b>${tea} ${tea===1?"Tasse":"Tassen"} Tee</b> Strickzeit.</div>`:""}
+    <div class="kudos"><span class="kava">${LOGO}</span><span><b>Das Knäuel</b> gibt dir Kudos 👏</span></div>
+    <p class="stx-foot">Gemessen wird die Zeit zwischen zwei Tipps auf Plus. Pausen über 25 Minuten zählen nicht mit.</p>
+  </div>`;
+  document.body.appendChild(box);
+  document.body.style.overflow = "hidden";
+  const close = ()=>{ box.remove(); document.body.style.overflow = ""; };
+  box.querySelector("[data-sx]").onclick = close;
+  box.querySelector("[data-share]").onclick = ()=>shareStats(p, st, days);
+}
+
+function shareStats(p, st, days){
+  const W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+  const c = cv.getContext("2d"), OR = "#FC4C02", INK = "#242428", GR = "#6D6D78";
+  const F = (w,s)=>`${w} ${s}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+  c.fillStyle = "#FFFFFF"; c.fillRect(0,0,W,H);
+  c.fillStyle = OR; c.fillRect(0,0,W,14);
+  c.fillStyle = OR; c.beginPath(); c.arc(110,130,44,0,7); c.fill();
+  c.fillStyle = "#fff"; c.font = F(800,44); c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("L",110,132);
+  c.textAlign = "left"; c.textBaseline = "alphabetic";
+  c.fillStyle = INK; c.font = F(700,38); c.fillText("Lena", 178, 120);
+  c.fillStyle = GR; c.font = F(500,30); c.fillText(p.status==="fertig" ? "Fertig am "+fmtDate(p.finished) : "Läuft seit "+fmtDate(p.created), 178, 160);
+  c.fillStyle = INK; c.font = F(800,76);
+  let title = p.name; while(c.measureText(title).width > W-140 && title.length>4) title = title.slice(0,-2);
+  if(title!==p.name) title += "…";
+  c.fillText(title, 70, 290);
+  const free = p.mode==="free", Us = free ? "Zählungen" : unitsOf(p);
+  const cells = [
+    ["Strickzeit", st.enough ? fmtDur(st.total, st.est>0) : "–"],
+    [Us, fmtNum(st.D)],
+    [free?"Tage":"Maschen", free ? String(days) : fmtNum(st.stitches)],
+    ["Ø pro "+(free?"Zählung":unitOf(p)), st.enough ? fmtPace(st.med)+" min" : "–"],
+    ["Sessions", String(st.sess.length||"–")],
+    ["Tage", String(days)]
+  ];
+  cells.forEach((cl,i)=>{ const col = i%3, row = Math.floor(i/3), x = 70 + col*330, y = 400 + row*190;
+    c.fillStyle = GR; c.font = F(500,30); c.fillText(cl[0], x, y);
+    let fs = 64; c.font = F(800,fs); while(c.measureText(cl[1]).width > 300 && fs>34){ fs -= 2; c.font = F(800,fs); }
+    c.fillStyle = INK; c.fillText(cl[1], x, y+76); });
+  c.strokeStyle = "#ECECF0"; c.lineWidth = 2; c.beginPath(); c.moveTo(70,790); c.lineTo(W-70,790); c.stroke();
+  const P = st.profile;
+  if(P.length>1){
+    const x0 = 70, y0 = 840, w = W-140, h = 300, max = Math.max(...P), n = P.length;
+    const X = i=>x0+i/(n-1)*w, Y = v=>y0+h-(v/max)*(h-20);
+    const area = (a,b,col)=>{ c.fillStyle = col; c.beginPath(); c.moveTo(X(a),y0+h); for(let i=a;i<=b;i++) c.lineTo(X(i),Y(P[i])); c.lineTo(X(b),y0+h); c.closePath(); c.fill(); };
+    area(0,n-1,"#E9E9EE");
+    if(st.pos>0) area(0,Math.min(n-1,st.pos-1),OR);
+    c.fillStyle = GR; c.font = F(500,26); c.fillText("Maschenprofil", x0, y0-14);
+  }
+  c.fillStyle = OR; c.font = F(800,34); c.fillText("Lena Del Yarn", 70, H-70);
+  c.fillStyle = GR; c.font = F(500,28); c.textAlign = "right"; c.fillText("Masche für Masche", W-70, H-70);
+  cv.toBlob(async blob=>{
+    if(!blob) return toast("Bild konnte nicht erstellt werden");
+    const file = new File([blob], `bilanz-${slug(p.name)}.png`, {type:"image/png"});
+    try{
+      if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:p.name}); return; }
+    }catch(e){ if(e && e.name==="AbortError") return; }
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = file.name;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+  }, "image/png");
 }
 
 /* ============ Abschluss-Feier ============ */
@@ -965,13 +1277,15 @@ function celebrate(p){
         <div><b>${days}</b><span>${days===1?"Tag":"Tage"}</span></div>
         ${maxSt?`<div><b>${maxSt}</b><span>Maschen max.</span></div>`:""}
       </div>
-      <button class="btn" data-pclose>Juhu, weiter!</button>
+      <button class="btn" data-pstats>Meine Bilanz ansehen</button>
+      <button class="btn ghost" data-pclose>Juhu, weiter!</button>
       <p class="ptip">Tipp irgendwo hin für noch mehr Feuerwerk</p>
     </div>`;
   document.body.appendChild(box);
   const fw = fireworks(box.querySelector("canvas"));
   box.addEventListener("click", e=>{ if(e.target.tagName==="CANVAS" || e.target===box) fw.burst(e.clientX, e.clientY); });
   box.querySelector("[data-pclose]").onclick = ()=>{ fw.stop(); box.remove(); };
+  box.querySelector("[data-pstats]").onclick = ()=>{ fw.stop(); box.remove(); showStats(p); };
 }
 function fireworks(cv){
   const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;

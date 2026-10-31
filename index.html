@@ -317,6 +317,37 @@ body.fixed .undo button{padding:11px 0}
 .more>summary::-webkit-details-marker{display:none}
 .more>summary::after{content:"＋";color:var(--sgr)}
 .more[open]>summary::after{content:"－"}
+/* Anleitungen finden */
+.findcard{display:flex;align-items:center;gap:14px;width:100%;text-align:left;margin-top:12px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px 18px}
+.findcard .fic{width:44px;height:44px;border-radius:14px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
+.findcard b{display:block;font-family:Georgia,serif;font-weight:400;font-size:19px}
+.findcard span span{font-size:13.5px;color:var(--muted)}
+.findcard:active{transform:scale(.985)}
+.fcard{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:4px 16px 14px;margin-bottom:16px}
+.fcard>summary{list-style:none;cursor:pointer;padding:12px 0 10px;display:flex;flex-direction:column;gap:2px}
+.fcard>summary::-webkit-details-marker{display:none}
+.fcard>summary b{font-family:Georgia,serif;font-weight:400;font-size:18px}
+.fcard>summary span{font-size:13px;color:var(--muted)}
+.fgrp{margin-bottom:14px}
+.fgrp>label{display:block;font-size:13px;color:var(--muted);margin-bottom:7px}
+.fchips{display:flex;flex-wrap:wrap;gap:7px}
+.fchips button{padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:14px;color:var(--ink)}
+.fchips button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.unitin{display:flex;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding-right:10px}
+.unitin input{flex:1;min-width:0;width:100%;border:0!important;background:transparent!important;padding:11px 12px;font-size:16px}
+.srow2>*{min-width:0}
+.unitin span,.unitin button{font-size:13.5px;color:var(--muted);white-space:nowrap}
+.unitin button{color:var(--accent);font-weight:600;padding:6px 4px}
+.srow2{display:grid;grid-template-columns:64px 1fr 1fr;gap:8px;align-items:center;margin-bottom:8px;font-size:14px}
+.fhd{font-family:Georgia,serif;font-size:17px;margin:18px 2px 8px;display:flex;gap:8px;align-items:baseline}
+.fhd span{font-family:-apple-system,sans-serif;font-size:12.5px;color:var(--muted)}
+.pcard.fres{display:block}
+.pcard.dim{opacity:.6}
+.fbadges{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.fb{font-size:12.5px;padding:3px 9px;border-radius:999px;background:#F1EEE8;color:var(--muted)}
+.fb.ok{background:#E3F4EA;color:#1F7A47}
+.fb.warn{background:#FFF1DC;color:#9A5B00}
+.fb.bad{background:#FBE4E1;color:#A3322A}
 /* Freie Zähler */
 .counter{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
 .counter .chead{display:flex;align-items:center;gap:8px;margin-bottom:10px}
@@ -399,7 +430,7 @@ body.fixed .undo button{padding:11px 0}
 
 <script>
 "use strict";
-const VERSION = "2.5";
+const VERSION = "2.6";
 const KEY = "lena-handarbeit";
 const BACKUP_DAYS = 14;
 const DAY = 86400000;
@@ -558,6 +589,7 @@ function render(){
   else if(view.name==="list") renderList();
   else if(view.name==="project") renderProject();
   else if(view.name==="settings") renderSettings();
+  else if(view.name==="finder") renderFinder();
   window.scrollTo(0,0);
   syncWake();
 }
@@ -599,8 +631,11 @@ function renderHome(){
       <button class="craft" data-pick="stricken">${ICON_KNIT}<span><span class="cname">Stricken</span><span class="csub">${sub("stricken")}</span></span></button>
       <button class="craft" data-pick="haekeln">${ICON_CROCHET}<span><span class="cname">Häkeln</span><span class="csub">${sub("haekeln")}</span></span></button>
     </div>
+    <button class="findcard" data-finder><span class="fic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg></span>
+      <span><b>Anleitungen finden</b><span>Wolle da – was passt? · ${allPatterns().length} Anleitung${allPatterns().length===1?"":"en"}</span></span></button>
   </div>`;
   app.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{ view.craft=b.dataset.pick; view.name="list"; render(); });
+  app.querySelector("[data-finder]").onclick = ()=>{ view.name="finder"; render(); };
   app.querySelector("[data-go=settings]").onclick=()=>{ view.name="settings"; render(); };
   const c = app.querySelector("[data-cont]"); if(c) c.onclick=()=>openProject(active);
   const h = app.querySelector("[data-hideinstall]"); if(h) h.onclick=()=>{ state.settings.hideInstall=true; save(); renderHome(); };
@@ -645,18 +680,212 @@ function librarySheet(){
     el.querySelector("[data-imp]").onclick=()=>{ closeSheet(); importSheet(view.craft); };
   });
 }
+function yarnLine(t){
+  const y = yarnOf(t), bits = [];
+  if(y.weight) bits.push(weightLabel(y.weight)); if(y.material.length) bits.push(y.material.join(", "));
+  if(y.run) bits.push(`${y.run} m/50 g`); if(y.needles.length) bits.push(y.needles.map(mm).join(" · "));
+  if(y.colors) bits.push(`${y.colors} ${y.colors===1?"Farbe":"Farben"}`);
+  if(y.grams.length) bits.push(y.grams.length>1 ? `${Math.min(...y.grams)}–${Math.max(...y.grams)} g` : `${y.grams[0]} g`);
+  return bits.length ? `<p class="sub" style="margin-top:-8px">🧶 ${esc(bits.join(" · "))}</p>` : "";
+}
 function patternSheet(t){
   const inUse = state.projects.filter(p=>p.patternId===t.id).length;
   sheet(`<h3>${esc(t.name)}</h3>
     <p class="sub">${esc(t.designer||"")}${inUse?` · in ${inUse} Projekt${inUse===1?"":"en"} benutzt`:""}</p>
+    ${yarnLine(t)}
     <button class="btn" data-start>Projekt damit starten</button>
+    <button class="btn ghost" data-yarn>Garn & Nadeln ${t.yarn?"bearbeiten":"ergänzen"}</button>
     <button class="btn ghost" data-ren>Umbenennen</button>
     <button class="btn ghost danger" data-del>Aus der Bibliothek löschen</button>
     <button class="btn ghost" data-close>Schließen</button>`, el=>{
-    el.querySelector("[data-start]").onclick=()=>{ closeSheet(); sizeSheet(t); };
-    el.querySelector("[data-ren]").onclick=()=>{ closeSheet(); textSheet("Anleitung umbenennen","Name",t.name,v=>{ t.name=v; save(); renderList(); }); };
+    el.querySelector("[data-start]").onclick=()=>{ closeSheet(); if(view.name==="finder") view.craft = t.craft; sizeSheet(t); };
+    el.querySelector("[data-yarn]").onclick=()=>{ closeSheet(); yarnSheet(t); };
+    el.querySelector("[data-ren]").onclick=()=>{ closeSheet(); textSheet("Anleitung umbenennen","Name",t.name,v=>{ t.name=v; save(); render(); }); };
     el.querySelector("[data-del]").onclick=()=>{ closeSheet(); confirmSheet(`„${t.name}“ löschen?`, "Die Anleitung verschwindet aus der Bibliothek. Projekte, die schon laufen, behalten ihre Kopie.", "Löschen", ()=>{
-      state.library = state.library.filter(x=>x.id!==t.id); save(); renderList(); toast("Anleitung gelöscht"); }); };
+      state.library = state.library.filter(x=>x.id!==t.id); save(); render(); toast("Anleitung gelöscht"); }); };
+  });
+}
+
+/* ============ Anleitungen finden: "Wolle da – was passt?" ============ */
+/* Garnangaben einer Anleitung (JSON-Feld "yarn", in der App bearbeitbar):
+   material: ["Mohair", ...]   weight: "lace" | "fingering" | "sport" | "dk" | "worsted" | "bulky" | "superbulky"
+   meterPer50g: Lauflänge   colors: Anzahl Farben   needles: [mm, ...]
+   grams / meters: benötigte Menge, eine Zahl oder eine pro Größe */
+const WEIGHTS = [
+  {k:"lace",       label:"Lace",            min:300},
+  {k:"fingering",  label:"Fingering/Sock",  min:175},
+  {k:"sport",      label:"Sport",           min:140},
+  {k:"dk",         label:"DK",              min:110},
+  {k:"worsted",    label:"Worsted/Aran",    min:75},
+  {k:"bulky",      label:"Bulky",           min:45},
+  {k:"superbulky", label:"Super Bulky",     min:0}
+];
+const MATERIALS = ["Merino","Schurwolle","Mohair","Alpaka","Kaschmir","Seide","Baumwolle","Leinen","Acryl","Polyamid"];
+const NEEDLES = [2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,8,9,10,12,15];
+const mm = v => String(v).replace(".", ",") + " mm";
+const toArr = v => v==null || v==="" ? [] : Array.isArray(v) ? v : [v];
+const numArr = v => toArr(v).map(x=>+String(x).replace(",", ".")).filter(x=>x>0);
+function weightFromRun(run){ run = +run; if(!(run>0)) return ""; return (WEIGHTS.find(w=>run>=w.min)||WEIGHTS[WEIGHTS.length-1]).k; }
+function weightLabel(k){ const w = WEIGHTS.find(x=>x.k===k); return w ? w.label : ""; }
+function yarnOf(t){
+  const y = t.yarn||{}, run = +y.meterPer50g||0;
+  return {material: toArr(y.material).map(String), weight: y.weight||weightFromRun(run), run,
+    colors: +y.colors||0, needles: numArr(y.needles), grams: numArr(y.grams), meters: numArr(y.meters)};
+}
+function sizeShort(t, i){ const l = (t.sizes&&t.sizes[i])||""; return (l.split("·")[0]||"").trim().replace(/^Größe /,"Gr. ").replace(/^Size /,"Gr. ") || `Gr. ${i+1}`; }
+function finderState(){
+  // dasselbe Objekt behalten, damit Eingaben und Ergebnisliste immer denselben Stand sehen
+  const f = state.settings.finder = state.settings.finder || {};
+  const def = {craft:"alle", materials:[], weight:"", run:"", amount:"", unit:"g", colors:"", needles:[]};
+  for(const k in def) if(f[k]===undefined) f[k] = Array.isArray(def[k]) ? [] : def[k];
+  return f;
+}
+/* Bewertet eine Anleitung gegen die eingegebene Wolle. ok = passt, warn = geht mit Einschränkung, bad = eher nicht */
+function matchPattern(t, f){
+  const y = yarnOf(t), res = [];
+  const nSizes = Math.max(1, (t.sizes||[]).length);
+  // Garnstärke
+  const uw = f.weight || weightFromRun(f.run);
+  if(uw){
+    if(!y.weight) res.push(["info","Stärke unbekannt"]);
+    else { const d = Math.abs(WEIGHTS.findIndex(w=>w.k===uw) - WEIGHTS.findIndex(w=>w.k===y.weight));
+      res.push(d===0 ? ["ok", weightLabel(y.weight)] : d===1 ? ["warn", `${weightLabel(y.weight)} – Maschenprobe machen`] : ["bad", `braucht ${weightLabel(y.weight)}`]); }
+  }
+  // Material
+  if(f.materials.length){
+    if(!y.material.length) res.push(["info","Material unbekannt"]);
+    else { const hit = y.material.some(m=>f.materials.some(x=>x.toLowerCase()===m.toLowerCase()));
+      res.push(hit ? ["ok", y.material.join(", ")] : ["warn", `Original: ${y.material.join(", ")}`]); }
+  }
+  // Menge: wenn möglich in Metern vergleichen, sonst in Gramm
+  const amount = +String(f.amount).replace(",", ".");
+  if(amount>0){
+    const uRun = +f.run || 0;
+    const availM = f.unit==="m" ? amount : (uRun ? amount*uRun/50 : 0);
+    const availG = f.unit==="g" ? amount : (uRun ? amount*50/uRun : 0);   // Meter über die Lauflänge in Gramm umrechnen
+    const need = Array.from({length:nSizes}, (_,i)=>{
+      const g = y.grams.length ? (y.grams[i] ?? y.grams[0]) : 0, m = y.meters.length ? (y.meters[i] ?? y.meters[0]) : 0;
+      const nm = m || (g && y.run ? g*y.run/50 : 0);
+      if(availM && nm) return {need:nm, have:availM, unit:"m"};
+      if(availG && g) return {need:g, have:availG, unit:"g"};
+      return null; });
+    if(need.every(x=>!x)) res.push(["info","Garnmenge unbekannt"]);
+    else {
+      const fits = need.map((x,i)=>x && x.have>=x.need ? i : -1).filter(i=>i>=0);
+      const close = need.map((x,i)=>x && x.have<x.need && x.have>=x.need*0.9 ? i : -1).filter(i=>i>=0);
+      const lbl = ix => ix.length===1 ? sizeShort(t,ix[0]) : `${sizeShort(t,ix[0])}–${sizeShort(t,ix[ix.length-1]).replace("Gr. ","")}`;
+      const minNeed = need.filter(Boolean).reduce((a,b)=>b.need<a.need?b:a);
+      if(fits.length) res.push(["ok", nSizes>1 ? `reicht für ${lbl(fits)}` : "Menge reicht"]);
+      else if(close.length) res.push(["warn", nSizes>1 ? `knapp für ${lbl(close)}` : "Menge knapp"]);
+      else res.push(["bad", `braucht ab ${Math.round(minNeed.need)} ${minNeed.unit}`]);
+    }
+  }
+  // Farben
+  const uc = +f.colors||0;
+  if(uc && y.colors) res.push(y.colors<=uc ? ["ok", `${y.colors} ${y.colors===1?"Farbe":"Farben"}`] : ["warn", `${y.colors} Farben im Original`]);
+  // Nadeln
+  if(f.needles.length && y.needles.length){
+    const miss = y.needles.filter(n=>!f.needles.includes(n));
+    res.push(miss.length ? ["warn", `fehlt: ${miss.map(mm).join(", ")}`] : ["ok", y.needles.map(mm).join(" · ")]);
+  }
+  const level = res.some(r=>r[0]==="bad") ? 2 : res.some(r=>r[0]==="warn") ? 1 : (res.length && res.every(r=>r[0]==="info")) ? 3 : 0;
+  const score = res.reduce((s,r)=>s + ({ok:2, info:0, warn:-1, bad:-4})[r[0]], 0);
+  return {res, level, score};
+}
+function renderFinder(){
+  const f = finderState();
+  const chip = (attr, val, label, on)=>`<button type="button" data-${attr}="${esc(String(val))}" aria-pressed="${on}">${esc(label)}</button>`;
+  const allMat = [...new Set(MATERIALS.concat(allPatterns().flatMap(t=>yarnOf(t).material)))];
+  app.innerHTML = `${bar("Anleitungen finden","home")}
+  <div class="wrap">
+    <div class="tabs" role="tablist">${[["alle","Alle"],["stricken","Stricken"],["haekeln","Häkeln"]].map(([k,l])=>`<button role="tab" data-fcraft="${k}" aria-selected="${f.craft===k}">${l}</button>`).join("")}</div>
+    <details class="fcard" ${state.settings.finderOpen===false?"":"open"}>
+      <summary><b>Meine Wolle</b><span id="fsum"></span></summary>
+      <div class="fgrp"><label>Garnstärke</label><div class="fchips">${WEIGHTS.map(w=>chip("fw", w.k, w.label, f.weight===w.k)).join("")}</div></div>
+      <div class="two">
+        <div class="field"><label for="frun">Lauflänge (Banderole)</label><div class="unitin"><input id="frun" inputmode="decimal" placeholder="z. B. 200" value="${esc(f.run)}"><span>m / 50 g</span></div></div>
+        <div class="field"><label for="famt">Habe ich</label><div class="unitin"><input id="famt" inputmode="decimal" placeholder="z. B. 150" value="${esc(f.amount)}">
+          <button type="button" data-funit="${f.unit==="g"?"m":"g"}" aria-label="Einheit wechseln">${f.unit}</button></div></div>
+      </div>
+      <div class="fgrp"><label>Material</label><div class="fchips">${allMat.map(m=>chip("fm", m, m, f.materials.includes(m))).join("")}</div></div>
+      <div class="fgrp"><label>Farben, die ich habe</label><div class="fchips">${["",1,2,3,4,5,6].map(n=>chip("fc", n, n===""?"egal":n===6?"6+":String(n), String(f.colors)===String(n))).join("")}</div></div>
+      <div class="fgrp"><label>Nadeln, die ich habe</label><div class="fchips">${NEEDLES.map(n=>chip("fn", n, String(n).replace(".",","), f.needles.includes(n))).join("")}</div></div>
+      <button class="btn ghost" data-freset type="button">Alles zurücksetzen</button>
+    </details>
+    <div id="fres"></div>
+  </div>`;
+  wireBar();
+  const upd = ()=>{ save(); finderResults(); };
+  app.querySelectorAll("[data-fcraft]").forEach(b=>b.onclick=()=>{ f.craft = b.dataset.fcraft; app.querySelectorAll("[data-fcraft]").forEach(x=>x.setAttribute("aria-selected", x===b)); upd(); });
+  const tog = (sel, fn)=>app.querySelectorAll(sel).forEach(b=>b.onclick=()=>{ fn(b); upd(); });
+  tog("[data-fw]", b=>{ f.weight = f.weight===b.dataset.fw ? "" : b.dataset.fw; app.querySelectorAll("[data-fw]").forEach(x=>x.setAttribute("aria-pressed", x.dataset.fw===f.weight)); });
+  tog("[data-fm]", b=>{ const m = b.dataset.fm, i = f.materials.indexOf(m); i<0 ? f.materials.push(m) : f.materials.splice(i,1); b.setAttribute("aria-pressed", i<0); });
+  tog("[data-fc]", b=>{ f.colors = b.dataset.fc; app.querySelectorAll("[data-fc]").forEach(x=>x.setAttribute("aria-pressed", x===b)); });
+  tog("[data-fn]", b=>{ const n = +b.dataset.fn, i = f.needles.indexOf(n); i<0 ? f.needles.push(n) : f.needles.splice(i,1); b.setAttribute("aria-pressed", i<0); });
+  app.querySelector("#frun").oninput = e=>{ f.run = e.target.value.replace(",", ".").replace(/[^\d.]/g,"");
+    const w = weightFromRun(f.run); if(w){ f.weight = w; app.querySelectorAll("[data-fw]").forEach(x=>x.setAttribute("aria-pressed", x.dataset.fw===w)); } upd(); };
+  app.querySelector("#famt").oninput = e=>{ f.amount = e.target.value.replace(",", ".").replace(/[^\d.]/g,""); upd(); };
+  app.querySelector("[data-funit]").onclick = e=>{ f.unit = e.currentTarget.dataset.funit; e.currentTarget.dataset.funit = f.unit==="g"?"m":"g"; e.currentTarget.textContent = f.unit; upd(); };
+  app.querySelector("[data-freset]").onclick = ()=>{ state.settings.finder = null; finderState(); save(); renderFinder(); };
+  app.querySelector(".fcard").addEventListener("toggle", e=>{ state.settings.finderOpen = e.target.open; save(); });
+  finderResults();
+}
+function finderResults(){
+  const f = finderState(), box = document.getElementById("fres"); if(!box) return;
+  const parts = [];
+  if(f.weight) parts.push(weightLabel(f.weight)); if(+f.amount) parts.push(`${f.amount} ${f.unit}`);
+  if(f.materials.length) parts.push(f.materials.join(", ")); if(f.needles.length) parts.push(f.needles.map(mm).join(", "));
+  const sum = document.getElementById("fsum"); if(sum) sum.textContent = parts.join(" · ") || "noch nichts angegeben";
+  const pats = allPatterns().filter(t=>f.craft==="alle" || t.craft===f.craft);
+  if(!pats.length){ box.innerHTML = `<div class="empty"><h3>Noch keine Anleitungen</h3><p>Spiel bei Stricken oder Häkeln eine Anleitung ein, dann kannst du hier suchen.</p></div>`; return; }
+  const order = {0:0, 1:1, 3:2, 2:3};
+  const scored = pats.map(t=>({t, m:matchPattern(t,f)})).sort((a,b)=>order[a.m.level]-order[b.m.level] || b.m.score-a.m.score || a.t.name.localeCompare(b.t.name));
+  const groups = [[0,"Passt"],[1,"Passt mit kleinen Abstrichen"],[3,"Angaben fehlen – nicht prüfbar"],[2,"Eher nicht"]];
+  const anyInput = parts.length || +f.colors;
+  box.innerHTML = groups.map(([lv, title])=>{ const g = scored.filter(x=>x.m.level===lv); if(!g.length) return "";
+    return `${anyInput?`<h3 class="fhd">${title} <span>${g.length}</span></h3>`:""}<div class="plist">${g.map(({t,m})=>{
+      const y = yarnOf(t), noData = !y.weight && !y.material.length && !y.needles.length && !y.grams.length && !y.meters.length;
+      return `<button class="pcard fres ${lv===2?"dim":""}" data-ft="${esc(t.id)}">
+        <div class="prow"><span class="pname">${esc(t.name)}</span><span class="pct">${t.craft==="haekeln"?"Häkeln":"Stricken"}</span></div>
+        <div class="pmeta">${esc([t.designer, (t.sizes||[]).length>1?`${t.sizes.length} Größen`:""].filter(Boolean).join(" · "))}</div>
+        <div class="fbadges">${m.res.map(r=>`<span class="fb ${r[0]}">${esc(r[1])}</span>`).join("")}
+          ${noData?`<span class="fb info">Garnangaben fehlen – antippen zum Ergänzen</span>`:""}</div></button>`; }).join("")}</div>`; }).join("");
+  box.querySelectorAll("[data-ft]").forEach(b=>b.onclick=()=>patternSheet(allPatterns().find(t=>t.id===b.dataset.ft)));
+}
+/* Garnangaben einer Anleitung bearbeiten */
+function yarnSheet(t){
+  const y = yarnOf(t), sizes = (t.sizes&&t.sizes.length) ? t.sizes : ["Einheitsgröße"];
+  const sel = {weight:y.weight, material:[...y.material], needles:[...y.needles]};
+  const chip = (attr, val, label, on)=>`<button type="button" data-${attr}="${esc(String(val))}" aria-pressed="${on}">${esc(label)}</button>`;
+  const allMat = [...new Set(MATERIALS.concat(y.material))];
+  sheet(`<h3>Garn & Nadeln</h3>
+    <p class="sub">${esc(t.name)} – Angaben aus der Anleitung. Sie helfen beim Finden passender Anleitungen.</p>
+    <div class="fgrp"><label>Garnstärke</label><div class="fchips">${WEIGHTS.map(w=>chip("yw", w.k, w.label, sel.weight===w.k)).join("")}</div></div>
+    <div class="two">
+      <div class="field"><label for="yrun">Lauflänge</label><div class="unitin"><input id="yrun" inputmode="decimal" value="${y.run||""}"><span>m / 50 g</span></div></div>
+      <div class="field"><label for="ycol">Farben</label><input id="ycol" inputmode="numeric" value="${y.colors||""}"></div>
+    </div>
+    <div class="fgrp"><label>Material</label><div class="fchips">${allMat.map(m=>chip("ym", m, m, sel.material.includes(m))).join("")}</div>
+      <div class="field" style="margin-top:8px"><input id="ymat" placeholder="Weiteres Material, z. B. Yak"></div></div>
+    <div class="fgrp"><label>Nadelstärken</label><div class="fchips">${NEEDLES.map(n=>chip("yn", n, String(n).replace(".",","), sel.needles.includes(n))).join("")}</div></div>
+    <div class="fgrp"><label>Benötigte Garnmenge</label>
+      ${sizes.map((s,i)=>`<div class="srow2"><span>${esc(sizes.length>1?sizeShort(t,i):"Gesamt")}</span>
+        <div class="unitin"><input data-yg="${i}" inputmode="decimal" value="${y.grams.length?(y.grams[i]??""):""}"><span>g</span></div>
+        <div class="unitin"><input data-ymm="${i}" inputmode="decimal" value="${y.meters.length?(y.meters[i]??""):""}"><span>m</span></div></div>`).join("")}</div>
+    <button class="btn" data-ok>Speichern</button><button class="btn ghost" data-close>Abbrechen</button>`, el=>{
+    el.querySelectorAll("[data-yw]").forEach(b=>b.onclick=()=>{ sel.weight = sel.weight===b.dataset.yw ? "" : b.dataset.yw; el.querySelectorAll("[data-yw]").forEach(x=>x.setAttribute("aria-pressed", x.dataset.yw===sel.weight)); });
+    el.querySelectorAll("[data-ym]").forEach(b=>b.onclick=()=>{ const m = b.dataset.ym, i = sel.material.indexOf(m); i<0 ? sel.material.push(m) : sel.material.splice(i,1); b.setAttribute("aria-pressed", i<0); });
+    el.querySelectorAll("[data-yn]").forEach(b=>b.onclick=()=>{ const n = +b.dataset.yn, i = sel.needles.indexOf(n); i<0 ? sel.needles.push(n) : sel.needles.splice(i,1); b.setAttribute("aria-pressed", i<0); });
+    el.querySelector("#yrun").oninput = e=>{ const w = weightFromRun(e.target.value.replace(",", ".")); if(w && !sel.weight){ sel.weight = w; el.querySelectorAll("[data-yw]").forEach(x=>x.setAttribute("aria-pressed", x.dataset.yw===w)); } };
+    el.querySelector("[data-ok]").onclick=()=>{
+      const num = v=>{ const n = +String(v).replace(",", "."); return n>0 ? n : 0; };
+      const extra = el.querySelector("#ymat").value.split(/[;,]/).map(s=>s.trim()).filter(Boolean);
+      const grams = [...el.querySelectorAll("[data-yg]")].map(i=>num(i.value)), meters = [...el.querySelectorAll("[data-ymm]")].map(i=>num(i.value));
+      t.yarn = {material:[...new Set(sel.material.concat(extra))], weight:sel.weight, meterPer50g:num(el.querySelector("#yrun").value),
+        colors:num(el.querySelector("#ycol").value), needles:sel.needles.sort((a,b)=>a-b),
+        grams: grams.some(Boolean) ? (grams.length===1 ? grams[0] : grams) : [], meters: meters.some(Boolean) ? (meters.length===1 ? meters[0] : meters) : []};
+      save(); closeSheet(); toast("Garnangaben gespeichert"); render();
+    };
   });
 }
 

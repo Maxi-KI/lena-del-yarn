@@ -399,7 +399,7 @@ body.fixed .undo button{padding:11px 0}
 
 <script>
 "use strict";
-const VERSION = "2.4";
+const VERSION = "2.4.1";
 const KEY = "lena-handarbeit";
 const BACKUP_DAYS = 14;
 const DAY = 86400000;
@@ -726,7 +726,7 @@ function counterBody(p){
   const cur = rows[done];
   const stitchesNow = done>0 ? rows[done-1].stitches : castOnOf(part, p.sizeIdx||0);
   const blockStart = done - (cur.rowInBlock-1);
-  const inBlock = cur.blockLen>1 && cur.repeatTotal>1;
+  const inBlock = cur.blockLen>1 && (cur.repeatTotal>1 || cur.blockLen<=12);   // auch einzelne Abschnitte wie Farbstreifen als Kästchen zeigen
   let dots = "";
   if(inBlock && cur.blockLen<=12){
     dots = `<div class="chips">${Array.from({length:cur.blockLen},(_,i)=>{

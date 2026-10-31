@@ -399,7 +399,7 @@ body.fixed .undo button{padding:11px 0}
 
 <script>
 "use strict";
-const VERSION = "2.4.1";
+const VERSION = "2.5";
 const KEY = "lena-handarbeit";
 const BACKUP_DAYS = 14;
 const DAY = 86400000;
@@ -445,13 +445,15 @@ function buildRows(part, sizeIdx){
   const out = [];
   let stitches = castOnOf(part, sizeIdx);
   (part.sections||[]).forEach((sec, si)=>{
-    const reps = pick(sec.repeats, sizeIdx) || 1;
+    // 0 Wiederholungen = Abschnitt gibt es in dieser Größe nicht; fehlt die Angabe, gilt 1
+    const rp = pick(sec.repeats, sizeIdx), reps = rp===0 ? 0 : (rp || 1);
+    const secName = pick(sec.name, sizeIdx);
     for(let r=0; r<reps; r++){
       sec.rows.forEach((row, ri)=>{
         const delta = pick(row.delta, sizeIdx) || 0;
         stitches += delta;
-        out.push({sectionIdx:si, sectionName:sec.name, repeat:r+1, repeatTotal:reps,
-          rowInBlock:ri+1, blockLen:sec.rows.length, side:row.side||"",
+        out.push({sectionIdx:si, sectionName:secName, repeat:r+1, repeatTotal:reps,
+          rowInBlock:ri+1, blockLen:sec.rows.length, side:pick(row.side, sizeIdx)||"",
           text:pick(row.text, sizeIdx), delta, stitches});
       });
     }
@@ -1813,8 +1815,10 @@ function checkPattern(t){
   const sizes = Math.max(1, Array.isArray(t.sizes)?t.sizes.length:1);
   for(const pt of t.parts){
     if(!Array.isArray(pt.sections) || !pt.sections.length) return `„${pt.name||"Teil"}“ enthält keine Abschnitte`;
-    for(const s of pt.sections) if(!Array.isArray(s.rows) || !s.rows.length) return `Abschnitt „${s.name||"ohne Namen"}“ ist leer`;
-    for(let i=0;i<sizes;i++) if(buildRows(pt,i).some(r=>r.stitches<0)) return `Bei „${pt.name||"Teil"}“ fällt die Maschenzahl unter 0`;
+    for(const s of pt.sections) if(!Array.isArray(s.rows) || !s.rows.length) return `Abschnitt „${pick(s.name,0)||"ohne Namen"}“ ist leer`;
+    for(let i=0;i<sizes;i++){ const rs = buildRows(pt,i);
+      if(!rs.length) return `„${pt.name||"Teil"}“ hat in Größe ${i+1} keine Reihen`;
+      if(rs.some(r=>r.stitches<0)) return `Bei „${pt.name||"Teil"}“ fällt die Maschenzahl unter 0`; }
   }
   return null;
 }

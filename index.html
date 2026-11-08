@@ -96,6 +96,11 @@ input,textarea,select{font:inherit;color:inherit}
 .instr .side{font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center}
 .badge{font-size:12px;background:var(--accent);color:#fff;border-radius:999px;padding:2px 9px;font-weight:600}
 .instr p{margin:10px 0 0;font-size:17.5px;line-height:1.5}
+.instr.setup{border-color:var(--accent);box-shadow:inset 4px 0 0 var(--accent);padding:15px 16px 12px}
+.instr.setup ol,.setuplist{margin:8px 0 0;padding-left:22px}
+.instr.setup li{font-size:16px;line-height:1.42;margin:5px 0}
+.setuplist li{margin:4px 0;line-height:1.45}
+.undo button:disabled{opacity:.4}
 .blockbar{display:flex;gap:4px;margin-top:14px}
 .blockbar i{flex:1;height:5px;border-radius:3px;background:var(--line)}
 .blockbar i.on{background:var(--accent);opacity:.45}
@@ -430,7 +435,7 @@ body.fixed .undo button{padding:11px 0}
 
 <script>
 "use strict";
-const VERSION = "2.6";
+const VERSION = "2.7";
 const KEY = "lena-handarbeit";
 const BACKUP_DAYS = 14;
 const DAY = 86400000;
@@ -464,6 +469,15 @@ function unitOf(x){ return (x && x.unit) || (x && x.craft==="haekeln" ? "Runde" 
 function unitsOf(x){ return unitOf(x) + "n"; }
 function pick(v, i){ return Array.isArray(v) ? (v[i] ?? v[0]) : v; }
 function castOnOf(part, i){ return pick(part.castOn, i) || 0; }
+/* „Vor dem Start“: Schritte, die vor der ersten Reihe eines Teils nötig sind (Anschlag, Markierer …) */
+function setupOf(p, idx){
+  const part = p.parts[idx]; let v = part && part.setup;
+  if(!v && p.patternId){ const t = allPatterns().find(x=>x.id===p.patternId);   // ältere Projekte: aus der Bibliothek nachlesen
+    if(t && t.parts && t.parts.length===p.parts.length && t.parts[idx]) v = t.parts[idx].setup; }
+  const txt = pick(v, p.sizeIdx||0);
+  return typeof txt==="string" && txt.trim() ? txt.split("\n").map(x=>x.trim()).filter(Boolean) : null;
+}
+function setupPending(p, idx){ const part = p.parts[idx]; return p.mode!=="free" && !(part.row>0) && !part.setupDone && !!setupOf(p, idx); }
 function fmtDate(t){ return new Date(t).toLocaleDateString("de-DE", {day:"numeric", month:"long", year:"numeric"}); }
 function daysText(p){ const d = Math.floor(((p.finished||Date.now())-p.created)/DAY); return d<1 ? "an einem Tag" : `in ${d+1} Tagen`; }
 function sinceDays(t){ return Math.max(0, Math.floor((Date.now()-t)/DAY)); }
@@ -954,6 +968,21 @@ function counterBody(p){
       <div class="dock"><div class="undo"><button data-minus>− Zurück</button><button data-jump>Springen</button></div></div>`;
   }
 
+  if(setupPending(p, idx)){
+    const steps = setupOf(p, idx), st0 = castOnOf(part, p.sizeIdx||0);
+    return `<div class="cmain">${partSel(p, idx, true)}
+      <div class="section-name"><span>${esc(part.name)}</span><span>${st0} M · vor ${U} 1</span></div>
+      <div class="instr setup">
+        <div class="eyebrow">Vor dem Start</div>
+        <ol>${steps.map(x=>`<li>${esc(x)}</li>`).join("")}</ol>
+      </div>
+      </div>
+      <div class="dock">
+        <button class="plus" data-setupdone><span class="sign">✓</span><span class="lbl">Erledigt – weiter zu ${U} 1</span></button>
+        <div class="undo"><button data-minus disabled>− Zurück</button><button data-jump>Springen</button></div>
+        <div class="total" id="wakebadge">${wakeText()}</div>
+      </div>`;
+  }
   const cur = rows[done];
   const stitchesNow = done>0 ? rows[done-1].stitches : castOnOf(part, p.sizeIdx||0);
   const blockStart = done - (cur.rowInBlock-1);
@@ -1020,7 +1049,11 @@ function wireCounter(p){
     part.row = before+1; logRow(p, idx, part.row); touchRow();
     if(gap < 2500) toast(`${U} ${before+1} gezählt`, "Rückgängig", ()=>{ if(part.row!==before+1) return; part.row = before; unlogRow(p, idx, before); touchRow(); });
   };
-  app.querySelectorAll("[data-minus]").forEach(b=>b.onclick = ()=>{ if(!(part.row>0)) return; part.row--; unlogRow(p, idx, part.row); touchRow(); });
+  app.querySelectorAll("[data-minus]").forEach(b=>b.onclick = ()=>{
+    if(!(part.row>0)){ if(part.setupDone && setupOf(p, idx)){ part.setupDone = false; touchRow(); } return; }   // zurück zu „Vor dem Start“
+    part.row--; unlogRow(p, idx, part.row); touchRow(); });
+  const sd = app.querySelector("[data-setupdone]");
+  if(sd) sd.onclick = ()=>{ lastPlus = Date.now(); part.setupDone = true; touchRow(); };
   app.querySelectorAll("[data-jump]").forEach(b=>b.onclick = ()=>jumpSheet(p, idx));
   const np = app.querySelector("[data-nextpart]"); if(np) np.onclick = ()=>{ view.partIdx = +np.dataset.nextpart; view._resetScroll = true; renderProject(); };
   const comp = app.querySelector("[data-complete]"); if(comp) comp.onclick = ()=>touch();
@@ -1197,7 +1230,8 @@ function patternBody(p){
   const range = (a,b)=> a===b ? `${U} ${a+1}` : `${Us} ${a+1}–${b+1}`;
   const deltaTag = (r, repeated)=> r.delta ? ` <em>${r.delta>0?"+":""}${r.delta} M${repeated?"":" → "+r.stitches}</em>` : "";
   return `${partSel(p, idx, false)}
-    <div class="note"><h3>Anschlag</h3><p>${castOnOf(part, p.sizeIdx||0) ? castOnOf(part, p.sizeIdx||0)+" Maschen" : "Ohne Anschlag"}${p.meta&&p.meta.needle?" · "+esc(p.meta.needle):""}</p></div>
+    ${setupOf(p, idx) ? `<div class="note"><h3>Vor dem Start</h3><ol class="setuplist">${setupOf(p, idx).map(x=>`<li>${esc(x)}</li>`).join("")}</ol></div>`
+      : `<div class="note"><h3>Anschlag</h3><p>${castOnOf(part, p.sizeIdx||0) ? castOnOf(part, p.sizeIdx||0)+" Maschen" : "Ohne Anschlag"}${p.meta&&p.meta.needle?" · "+esc(p.meta.needle):""}</p></div>`}
     ${secs.map(s=>{
       const here = cur<rows.length && cur>=s.start && cur<=s.end;
       const secSt = cur>s.end ? "done" : here ? "now" : "todo";
@@ -1959,7 +1993,7 @@ function createFromPattern(t, sizeIdx){
     sizeIdx, sizeLabel:(t.sizes&&t.sizes[sizeIdx])||"Einheitsgröße",
     intro:t.intro||"", glossary:t.glossary||[], notes:t.notes||[], meta:Object.assign({}, t.meta||{}),
     form:t.form||"", reihenhoehe:t.reihenhoehe||0,
-    parts:(t.parts||[]).map(pt=>({name:pt.name, castOn:pt.castOn, sections:pt.sections, form:pt.form||"", reihenhoehe:pt.reihenhoehe||0, row:0, aux:[], note:""})),
+    parts:(t.parts||[]).map(pt=>({name:pt.name, castOn:pt.castOn, setup:pt.setup, sections:pt.sections, form:pt.form||"", reihenhoehe:pt.reihenhoehe||0, row:0, aux:[], note:""})),
     status:"laufend", created:Date.now(), updated:Date.now()};
   state.projects.push(p); save(); openProject(p);
 }
@@ -2045,6 +2079,7 @@ function checkPattern(t){
   for(const pt of t.parts){
     if(!Array.isArray(pt.sections) || !pt.sections.length) return `„${pt.name||"Teil"}“ enthält keine Abschnitte`;
     for(const s of pt.sections) if(!Array.isArray(s.rows) || !s.rows.length) return `Abschnitt „${pick(s.name,0)||"ohne Namen"}“ ist leer`;
+    if(pt.setup!=null && ![].concat(pt.setup).every(x=>typeof x==="string")) return `„Vor dem Start“ bei „${pt.name||"Teil"}“ muss Text sein`;
     for(let i=0;i<sizes;i++){ const rs = buildRows(pt,i);
       if(!rs.length) return `„${pt.name||"Teil"}“ hat in Größe ${i+1} keine Reihen`;
       if(rs.some(r=>r.stitches<0)) return `Bei „${pt.name||"Teil"}“ fällt die Maschenzahl unter 0`; }

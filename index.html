@@ -435,7 +435,7 @@ body.fixed .undo button{padding:11px 0}
 
 <script>
 "use strict";
-const VERSION = "2.7";
+const VERSION = "2.8";
 const KEY = "lena-handarbeit";
 const BACKUP_DAYS = 14;
 const DAY = 86400000;
@@ -466,7 +466,10 @@ function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;
 function allPatterns(){ return [...LIBRARY, ...state.library]; }
 function craftLabel(c){ return c==="haekeln" ? "Häkeln" : "Stricken"; }
 function unitOf(x){ return (x && x.unit) || (x && x.craft==="haekeln" ? "Runde" : "Reihe"); }
-function unitsOf(x){ return unitOf(x) + "n"; }
+function unitsOf(x){ const u = unitOf(x); return /e$/.test(u) ? u+"n" : u+"e"; }
+/* Einheit pro Teil (z. B. Rumpf in Reihen, Ärmel in Runden); sonst die der Anleitung */
+const unitAt = (p, part)=> part && part.unit ? part.unit : unitOf(p);
+const unitsAt = (p, part)=> unitsOf({unit:unitAt(p, part)});
 function pick(v, i){ return Array.isArray(v) ? (v[i] ?? v[0]) : v; }
 function castOnOf(part, i){ return pick(part.castOn, i) || 0; }
 /* „Vor dem Start“: Schritte, die vor der ersten Reihe eines Teils nötig sind (Anschlag, Markierer …) */
@@ -625,7 +628,7 @@ function backupDue(){
 function continueLine(p){
   if(p.mode==="free"){ const c=(p.counters||[])[0]; return c ? `${esc(c.name)}: ${c.value||0}` : "Freies Zählen"; }
   const i = firstOpenPart(p), part = p.parts[i], rows = projectRows(p,i);
-  return `${p.parts.length>1?esc(part.name)+" · ":""}${unitOf(p)} ${Math.min((part.row||0)+1, rows.length)} von ${rows.length}`;
+  return `${p.parts.length>1?esc(part.name)+" · ":""}${unitAt(p, part)} ${Math.min((part.row||0)+1, rows.length)} von ${rows.length}`;
 }
 function renderHome(){
   const active = state.projects.filter(p=>p.status!=="fertig").sort((a,b)=>b.updated-a.updated)[0];
@@ -949,7 +952,7 @@ function stOf(i, cur){ return i<cur ? "done" : i===cur ? "now" : "todo"; }
 function changeWord(d){ return (d>0?"Zunahme":"Abnahme") + ` (${d>0?"+":""}${d} M)`; }
 function counterBody(p){
   const idx = Math.min(view.partIdx, p.parts.length-1), part = p.parts[idx], rows = projectRows(p, idx);
-  const U = unitOf(p), Us = unitsOf(p);
+  const U = unitAt(p, part), Us = unitsAt(p, part);
   const done = part.row||0;
   const extras = auxAndNote(part);
 
@@ -1035,7 +1038,7 @@ function auxAndNote(part){
 }
 let lastPlus = 0;
 function wireCounter(p){
-  const idx = Math.min(view.partIdx, p.parts.length-1), part = p.parts[idx], rows = projectRows(p, idx), U = unitOf(p);
+  const idx = Math.min(view.partIdx, p.parts.length-1), part = p.parts[idx], rows = projectRows(p, idx), U = unitAt(p, part);
   const touch = ()=>{ const fin = syncStatus(p); p.updated = Date.now(); save(); renderProject(); if(fin) celebrate(p); };
   const touchRow = ()=>{ view._resetScroll = true; touch(); };
   wirePartSel();
@@ -1108,7 +1111,7 @@ function locate(p, idx, maschen, seit){
   return out;
 }
 function jumpSheet(p, idx){
-  const part = p.parts[idx], rows = projectRows(p, idx), U = unitOf(p), Us = unitsOf(p);
+  const part = p.parts[idx], rows = projectRows(p, idx), U = unitAt(p, part), Us = unitsAt(p, part);
   const secs = []; rows.forEach((r,i)=>{ if(!secs.length || secs[secs.length-1].idx!==r.sectionIdx) secs.push({idx:r.sectionIdx, name:r.sectionName, start:i}); });
   const hasChanges = rows.some(r=>r.delta);
   const knit = p.craft!=="haekeln";
@@ -1221,7 +1224,7 @@ function counterSheet(p, i){
 
 /* ---- Anleitung ---- */
 function patternBody(p){
-  const idx = Math.min(view.partIdx, p.parts.length-1), part = p.parts[idx], rows = projectRows(p, idx), cur = part.row||0, U = unitOf(p), Us = unitsOf(p);
+  const idx = Math.min(view.partIdx, p.parts.length-1), part = p.parts[idx], rows = projectRows(p, idx), cur = part.row||0, U = unitAt(p, part), Us = unitsAt(p, part);
   const curRow = rows[Math.min(cur, rows.length-1)];
   const secs = [];
   rows.forEach((r,i)=>{ const s = secs[secs.length-1];
@@ -1993,7 +1996,7 @@ function createFromPattern(t, sizeIdx){
     sizeIdx, sizeLabel:(t.sizes&&t.sizes[sizeIdx])||"Einheitsgröße",
     intro:t.intro||"", glossary:t.glossary||[], notes:t.notes||[], meta:Object.assign({}, t.meta||{}),
     form:t.form||"", reihenhoehe:t.reihenhoehe||0,
-    parts:(t.parts||[]).map(pt=>({name:pt.name, castOn:pt.castOn, setup:pt.setup, sections:pt.sections, form:pt.form||"", reihenhoehe:pt.reihenhoehe||0, row:0, aux:[], note:""})),
+    parts:(t.parts||[]).map(pt=>({name:pt.name, unit:pt.unit||"", castOn:pt.castOn, setup:pt.setup, sections:pt.sections, form:pt.form||"", reihenhoehe:pt.reihenhoehe||0, row:0, aux:[], note:""})),
     status:"laufend", created:Date.now(), updated:Date.now()};
   state.projects.push(p); save(); openProject(p);
 }
